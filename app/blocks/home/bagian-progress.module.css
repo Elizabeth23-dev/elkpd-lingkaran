@@ -42,6 +42,32 @@
   margin-bottom: var(--space-3);
 }
 
+.progressBarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.resetButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.resetButton:hover {
+  color: var(--color-error, #e53e3e);
+  border-color: var(--color-error, #e53e3e);
+}
+
 .progressBarTitle {
   font-weight: 600;
   color: var(--color-text-primary);

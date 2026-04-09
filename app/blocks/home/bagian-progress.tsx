@@ -1,20 +1,29 @@
-import { Award, BookOpen, CheckCircle2, TrendingUp } from "lucide-react";
+import { Award, BookOpen, CheckCircle2, TrendingUp, RotateCcw } from "lucide-react";
 import classnames from "classnames";
+import { useProgress } from "~/hooks/use-progress";
 import styles from "./bagian-progress.module.css";
 
 export interface BagianProgressProps {
   className?: string;
 }
 
-const stats = [
-  { icon: BookOpen, label: "Materi Dipelajari", value: "1", total: "4", color: "primary" },
-  { icon: CheckCircle2, label: "Soal Dikerjakan", value: "5", total: "20", color: "success" },
-  { icon: Award, label: "Skor Rata-rata", value: "80", total: "100", color: "accent" },
-  { icon: TrendingUp, label: "Progress Keseluruhan", value: "25", total: "100", color: "secondary" },
-];
-
 export function BagianProgress({ className }: BagianProgressProps) {
-  const overallProgress = 25;
+  const {
+    materiDipelajari,
+    totalMateri,
+    soalDikerjakan,
+    totalSoal,
+    skorRataRata,
+    progressKeseluruhan,
+    reset,
+  } = useProgress();
+
+  const stats = [
+    { icon: BookOpen, label: 'Materi Dipelajari', value: String(materiDipelajari), total: String(totalMateri), color: 'primary' },
+    { icon: CheckCircle2, label: 'Soal Dikerjakan', value: String(soalDikerjakan), total: String(totalSoal), color: 'success' },
+    { icon: Award, label: 'Skor Rata-rata', value: String(skorRataRata), total: '100', color: 'accent' },
+    { icon: TrendingUp, label: 'Progress Keseluruhan', value: String(progressKeseluruhan), total: '100', color: 'secondary' },
+  ];
 
   return (
     <section className={classnames(styles.root, className)}>
@@ -27,10 +36,21 @@ export function BagianProgress({ className }: BagianProgressProps) {
         <div className={styles.progressBar}>
           <div className={styles.progressBarLabel}>
             <span className={styles.progressBarTitle}>Penyelesaian Keseluruhan</span>
-            <span className={styles.progressBarValue}>{overallProgress}%</span>
+            <div className={styles.progressBarRight}>
+              <span className={styles.progressBarValue}>{progressKeseluruhan}%</span>
+              <button
+                className={styles.resetButton}
+                onClick={reset}
+                title="Reset progress"
+                type="button"
+              >
+                <RotateCcw size={15} />
+                Reset
+              </button>
+            </div>
           </div>
           <div className={styles.bar}>
-            <div className={styles.barFill} style={{ width: `${overallProgress}%` }} />
+            <div className={styles.barFill} style={{ width: `${progressKeseluruhan}%` }} />
           </div>
         </div>
 
