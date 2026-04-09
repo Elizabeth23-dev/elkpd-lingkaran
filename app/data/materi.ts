@@ -189,17 +189,17 @@ export const kontenMateri: Record<string, { teori: string; subMateri?: SubMateri
         judul: 'Busur Minor dan Busur Mayor',
         isi: `Busur lingkaran adalah bagian dari keliling lingkaran yang dibatasi oleh dua titik pada lingkaran tersebut.
 
-Busur Minor adalah bagian busur lingkaran yang lebih kecil dari setengah keliling lingkaran. Busur ini dibatasi oleh dua titik dengan sudut pusat yang kurang dari 180°.
+Busur Minor adalah bagian busur lingkaran yang lebih kecil dari setengah keliling lingkaran. Busur ini dibatasi oleh dua titik dengan sudut pusat yang kurang dari 180\u00b0.
 
-Busur Mayor adalah bagian busur lingkaran yang lebih besar dari setengah keliling lingkaran. Busur ini dibatasi oleh dua titik dengan sudut pusat yang lebih dari 180°.
+Busur Mayor adalah bagian busur lingkaran yang lebih besar dari setengah keliling lingkaran. Busur ini dibatasi oleh dua titik dengan sudut pusat yang lebih dari 180\u00b0.
 
 Catatan: Jika hanya disebutkan kata "busur" tanpa keterangan, maka yang dimaksud adalah busur minor.`,
       },
       {
         judul: 'Sudut Pusat dan Sudut Keliling',
-        isi: `Sudut Pusat adalah sudut yang titik sudutnya terletak pada pusat lingkaran dan kaki-kaki sudutnya adalah jari-jari lingkaran. Sudut pusat dilambangkan dengan huruf α (alfa).
+        isi: `Sudut Pusat adalah sudut yang titik sudutnya terletak pada pusat lingkaran dan kaki-kaki sudutnya adalah jari-jari lingkaran. Sudut pusat dilambangkan dengan huruf \u03b1 (alfa).
 
-Sudut Keliling adalah sudut yang titik sudutnya terletak pada lingkaran dan kaki-kaki sudutnya berupa tali busur. Tali busur adalah ruas garis yang menghubungkan dua titik pada lingkaran. Sudut keliling dilambangkan dengan huruf θ (theta).
+Sudut Keliling adalah sudut yang titik sudutnya terletak pada lingkaran dan kaki-kaki sudutnya berupa tali busur. Tali busur adalah ruas garis yang menghubungkan dua titik pada lingkaran. Sudut keliling dilambangkan dengan huruf \u03b8 (theta).
 
 Kedua jenis sudut ini selalu berkaitan dengan busur lingkaran yang mereka "hadapi" atau lingkupi.`,
       },
@@ -207,93 +207,133 @@ Kedua jenis sudut ini selalu berkaitan dengan busur lingkaran yang mereka "hadap
         judul: 'Hubungan Sudut Pusat dan Sudut Keliling',
         isi: `Terdapat hubungan penting antara sudut pusat dan sudut keliling yang menghadap busur yang sama:
 
-• Sudut pusat = 2 × sudut keliling: α = 2θ
-• Sudut keliling = ½ × sudut pusat: θ = ½α
+\u2022 Sudut pusat = 2 \u00d7 sudut keliling: \u03b1 = 2\u03b8
+\u2022 Sudut keliling = \u00bd \u00d7 sudut pusat: \u03b8 = \u00bd\u03b1
 
 Sifat-sifat penting:
-• Semua sudut keliling yang menghadap busur yang sama memiliki besar yang sama
-• Sudut keliling yang menghadap diameter (busur setengah lingkaran) selalu bernilai 90°
-• Dua sudut keliling yang menghadap busur yang sama dari sisi berlawanan berjumlah 180° (sudut-sudut dalam segiempat tali busur)`,
+\u2022 Semua sudut keliling yang menghadap busur yang sama memiliki besar yang sama
+\u2022 Sudut keliling yang menghadap diameter (busur setengah lingkaran) selalu bernilai 90\u00b0
+\u2022 Dua sudut keliling yang menghadap busur yang sama dari sisi berlawanan berjumlah 180\u00b0 (sudut-sudut dalam segiempat tali busur)`,
       },
       {
         judul: 'Panjang Busur dan Luas Juring',
         isi: `Panjang Busur adalah panjang kurva busur yang dibatasi oleh dua titik pada lingkaran. Panjang busur sebanding dengan besar sudut pusat yang menghadapinya.
 
 Rumus Panjang Busur:
-l = (α / 360°) × 2πr
+l = (\u03b1 / 360\u00b0) \u00d7 2\u03c0r
 
 Luas Juring adalah luas daerah yang dibatasi oleh dua jari-jari dan sebuah busur lingkaran. Luas juring juga sebanding dengan besar sudut pusat.
 
 Rumus Luas Juring:
-L = (α / 360°) × πr²
+L = (\u03b1 / 360\u00b0) \u00d7 \u03c0r\u00b2
 
-di mana α adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari lingkaran.`,
+di mana \u03b1 adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari lingkaran.`,
       },
     ],
     rumus: [
-      { label: 'Sudut Pusat (α) terhadap Sudut Keliling (θ)', formula: 'α = 2θ' },
-      { label: 'Sudut Keliling (θ) terhadap Sudut Pusat (α)', formula: 'θ = ½α' },
-      { label: 'Panjang Busur', formula: 'l = (α / 360°) × 2πr' },
-      { label: 'Luas Juring', formula: 'L = (α / 360°) × πr²' },
+      { label: 'Sudut Pusat (\u03b1) terhadap Sudut Keliling (\u03b8)', formula: '\u03b1 = 2\u03b8' },
+      { label: 'Sudut Keliling (\u03b8) terhadap Sudut Pusat (\u03b1)', formula: '\u03b8 = \u00bd\u03b1' },
+      { label: 'Panjang Busur', formula: 'l = (\u03b1 / 360\u00b0) \u00d7 2\u03c0r' },
+      { label: 'Luas Juring', formula: 'L = (\u03b1 / 360\u00b0) \u00d7 \u03c0r\u00b2' },
     ],
     contoh: [
       {
-        soal: 'Diketahui sudut pusat ∠BOC = 70° pada lingkaran berpusat O dengan jari-jari 21 cm. Hitunglah panjang busur BC dan luas juring BOC! (π = 22/7)',
+        soal: 'Diketahui sudut pusat \u2220BOC = 70\u00b0 pada lingkaran berpusat O dengan jari-jari 21 cm. Hitunglah panjang busur BC dan luas juring BOC! (\u03c0 = 22/7)',
         solusi: [
-          'Diketahui: α = 70°, r = 21 cm, π = 22/7',
-          'Panjang busur BC = (α/360°) × 2πr = (70/360) × 2 × (22/7) × 21',
-          '= (7/36) × 2 × 22 × 3 = (7/36) × 132 = 924/36 = 25,67 cm',
-          'Luas juring BOC = (α/360°) × πr² = (70/360) × (22/7) × 21²',
-          '= (7/36) × (22/7) × 441 = (22/36) × 441 = 9702/36 = 269,5 cm²',
+          'Diketahui: \u03b1 = 70\u00b0, r = 21 cm, \u03c0 = 22/7',
+          'Panjang busur BC = (\u03b1/360\u00b0) \u00d7 2\u03c0r = (70/360) \u00d7 2 \u00d7 (22/7) \u00d7 21',
+          '= (7/36) \u00d7 2 \u00d7 22 \u00d7 3 = (7/36) \u00d7 132 = 924/36 = 25,67 cm',
+          'Luas juring BOC = (\u03b1/360\u00b0) \u00d7 \u03c0r\u00b2 = (70/360) \u00d7 (22/7) \u00d7 21\u00b2',
+          '= (7/36) \u00d7 (22/7) \u00d7 441 = (22/36) \u00d7 441 = 9702/36 = 269,5 cm\u00b2',
         ],
       },
       {
-        soal: 'Sudut pusat ∠AOB = 80°. Titik C terletak pada busur besar lingkaran. Tentukan besar sudut keliling ∠ACB!',
+        soal: 'Sudut pusat \u2220AOB = 80\u00b0. Titik C terletak pada busur besar lingkaran. Tentukan besar sudut keliling \u2220ACB!',
         solusi: [
           'Sudut keliling yang menghadap busur yang sama dengan sudut pusat',
-          '∠ACB = ½ × ∠AOB',
-          '∠ACB = ½ × 80° = 40°',
-          'Jadi besar sudut keliling ∠ACB adalah 40°',
+          '\u2220ACB = \u00bd \u00d7 \u2220AOB',
+          '\u2220ACB = \u00bd \u00d7 80\u00b0 = 40\u00b0',
+          'Jadi besar sudut keliling \u2220ACB adalah 40\u00b0',
         ],
       },
     ],
   },
   'lingkaran-garis-singgung': {
-    teori: `Garis singgung lingkaran adalah garis yang memiliki tepat satu titik persekutuan dengan lingkaran yang disebut titik singgung.
-
-Sifat-sifat garis singgung:
-• Garis singgung tegak lurus terhadap jari-jari lingkaran di titik singgung
-• Dari satu titik di luar lingkaran dapat dibuat dua garis singgung yang memiliki panjang sama
+    teori: '',
+    subMateri: [
+      {
+        judul: 'Pengertian Garis Singgung',
+        isi: `Garis singgung lingkaran adalah garis lurus yang memiliki tepat satu titik persekutuan dengan lingkaran. Titik tersebut disebut titik singgung.
 
 Contoh dalam kehidupan nyata: Roda kereta api yang menyentuh rel di satu titik. Secara matematis, rel berperan sebagai garis singgung roda dan titik sentuhnya disebut titik singgung.
 
-Penurunan persamaan garis singgung:
-Misalkan titik P(x₁, y₁) pada lingkaran x²+y²=r². Gradien garis OP adalah mOP = y₁/x₁. Karena garis singgung tegak lurus OP maka m = -x₁/y₁. Dengan substitusi ke persamaan garis, diperoleh persamaan garis singgung: x₁x + y₁y = r²`,
+Berbeda dengan garis potong (sekans) yang memiliki dua titik persekutuan, garis singgung hanya menyentuh lingkaran di satu titik saja, tanpa memotong atau melewati bagian dalam lingkaran.`,
+      },
+      {
+        judul: 'Sifat Garis Singgung',
+        isi: `Garis singgung lingkaran memiliki sifat-sifat penting berikut:
+
+\u2022 Tegak lurus terhadap jari-jari: Garis singgung selalu tegak lurus terhadap jari-jari lingkaran di titik singgung. Artinya, sudut antara garis singgung dan jari-jari di titik singgung adalah 90\u00b0.
+\u2022 Dari titik luar lingkaran, dapat dibuat tepat dua garis singgung ke lingkaran tersebut.
+\u2022 Dua garis singgung dari titik luar memiliki panjang yang sama: Jika dari titik P di luar lingkaran dibuat dua garis singgung PA dan PB, maka PA = PB.
+\u2022 Garis singgung tidak memiliki dua titik yang terletak di dalam lingkaran.`,
+      },
+      {
+        judul: 'Persamaan Garis Singgung di Titik pada Lingkaran',
+        isi: `Jika diketahui sebuah titik P(x\u2081, y\u2081) yang terletak pada lingkaran, maka persamaan garis singgung di titik tersebut dapat ditentukan.
+
+Untuk lingkaran x\u00b2 + y\u00b2 = r\u00b2:
+Persamaan garis singgung di titik (x\u2081, y\u2081): x\u2081x + y\u2081y = r\u00b2
+
+Untuk lingkaran (x-a)\u00b2 + (y-b)\u00b2 = r\u00b2 dengan pusat (a, b):
+Persamaan garis singgung di titik (x\u2081, y\u2081): (x\u2081-a)(x-a) + (y\u2081-b)(y-b) = r\u00b2
+
+Contoh: Garis singgung lingkaran x\u00b2+y\u00b2=25 di titik (3,4) adalah:
+3x + 4y = 25`,
+      },
+      {
+        judul: 'Persamaan Garis Singgung dari Titik Luar',
+        isi: `Jika titik P(x\u2080, y\u2080) berada di luar lingkaran, maka dapat dibuat dua garis singgung dari titik tersebut ke lingkaran.
+
+Panjang garis singgung dari titik luar P(x\u2080, y\u2080) ke lingkaran x\u00b2 + y\u00b2 = r\u00b2:
+L = \u221a(x\u2080\u00b2 + y\u2080\u00b2 - r\u00b2)
+
+Untuk lingkaran x\u00b2+y\u00b2+Ax+By+C=0, panjang garis singgungnya:
+L = \u221a(x\u2080\u00b2 + y\u2080\u00b2 + Ax\u2080 + By\u2080 + C)
+
+Titik singgungnya dapat dicari dengan cara:
+1. Misalkan titik singgung T(x\u2081, y\u2081) pada lingkaran
+2. Tulis persamaan garis singgung di T: x\u2081x + y\u2081y = r\u00b2
+3. Karena garis singgung melalui P(x\u2080, y\u2080), substitusi: x\u2081x\u2080 + y\u2081y\u2080 = r\u00b2
+4. Gunakan kondisi T pada lingkaran: x\u2081\u00b2 + y\u2081\u00b2 = r\u00b2
+5. Selesaikan sistem persamaan untuk memperoleh koordinat T`,
+      },
+    ],
     rumus: [
-      { label: 'Garis singgung di titik (x₁,y₁) pada x²+y²=r²', formula: 'x₁x + y₁y = r²' },
-      { label: 'Garis singgung di titik (x₁,y₁) pada (x-a)²+(y-b)²=r²', formula: '(x₁-a)(x-a) + (y₁-b)(y-b) = r²' },
-      { label: 'Garis singgung di titik (x₁,y₁) pada x²+y²+Ax+By+C=0', formula: 'x₁x + y₁y + ½A(x₁+x) + ½B(y₁+y) + C = 0' },
-      { label: 'Panjang garis singgung dari titik (x₀,y₀) ke x²+y²=r²', formula: 'L = √(x₀²+y₀²-r²)' },
+      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada x\u00b2+y\u00b2=r\u00b2', formula: 'x\u2081x + y\u2081y = r\u00b2' },
+      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada (x-a)\u00b2+(y-b)\u00b2=r\u00b2', formula: '(x\u2081-a)(x-a) + (y\u2081-b)(y-b) = r\u00b2' },
+      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada x\u00b2+y\u00b2+Ax+By+C=0', formula: 'x\u2081x + y\u2081y + \u00bdA(x\u2081+x) + \u00bdB(y\u2081+y) + C = 0' },
+      { label: 'Panjang garis singgung dari titik (x\u2080,y\u2080) ke x\u00b2+y\u00b2=r\u00b2', formula: 'L = \u221a(x\u2080\u00b2+y\u2080\u00b2-r\u00b2)' },
     ],
     contoh: [
       {
-        soal: 'Tentukan persamaan garis singgung lingkaran x²+y²=25 di titik P(3,4)!',
+        soal: 'Tentukan persamaan garis singgung lingkaran x\u00b2+y\u00b2=25 di titik P(3,4)!',
         solusi: [
-          'Diketahui: lingkaran x²+y²=25, titik singgung P(3,4)',
-          'Gunakan rumus: x₁x + y₁y = r²',
-          'Substitusi x₁=3, y₁=4, r²=25:',
+          'Diketahui: lingkaran x\u00b2+y\u00b2=25, titik singgung P(3,4)',
+          'Gunakan rumus: x\u2081x + y\u2081y = r\u00b2',
+          'Substitusi x\u2081=3, y\u2081=4, r\u00b2=25:',
           '3x + 4y = 25',
           'Jadi persamaan garis singgungnya adalah 3x + 4y = 25',
         ],
       },
       {
-        soal: 'Tentukan persamaan garis singgung lingkaran (x-2)²+(y+1)²=9 di titik Q(5,-1)!',
+        soal: 'Tentukan persamaan garis singgung lingkaran (x-2)\u00b2+(y+1)\u00b2=9 di titik Q(5,-1)!',
         solusi: [
-          'Pusat (a,b) = (2,-1), r²=9, titik singgung Q(5,-1)',
-          'Gunakan rumus: (x₁-a)(x-a) + (y₁-b)(y-b) = r²',
+          'Pusat (a,b) = (2,-1), r\u00b2=9, titik singgung Q(5,-1)',
+          'Gunakan rumus: (x\u2081-a)(x-a) + (y\u2081-b)(y-b) = r\u00b2',
           '(5-2)(x-2) + (-1-(-1))(y-(-1)) = 9',
           '3(x-2) + 0(y+1) = 9',
-          '3x - 6 = 9  →  3x = 15  →  x = 5',
+          '3x - 6 = 9  \u2192  3x = 15  \u2192  x = 5',
           'Jadi persamaan garis singgungnya adalah x = 5',
         ],
       },
@@ -314,42 +354,42 @@ Lingkaran tidak memiliki sudut dan merupakan kurva tertutup yang sempurna. Lingk
         judul: 'Unsur-unsur Lingkaran',
         isi: `Lingkaran memiliki beberapa unsur penting yang perlu dipahami:
 
-• Pusat (O): Titik yang berjarak sama ke semua titik pada lingkaran
-• Jari-jari (r): Ruas garis dari pusat ke titik pada lingkaran
-• Diameter (d): Tali busur yang melalui pusat lingkaran, d = 2r
-• Tali busur: Ruas garis yang menghubungkan dua titik pada lingkaran
-• Busur: Bagian dari keliling lingkaran
-• Apotema: Jarak terpendek dari pusat ke tali busur (tegak lurus)
-• Juring: Daerah yang dibatasi dua jari-jari dan sebuah busur
-• Tembereng: Daerah yang dibatasi tali busur dan busur`,
+\u2022 Pusat (O): Titik yang berjarak sama ke semua titik pada lingkaran
+\u2022 Jari-jari (r): Ruas garis dari pusat ke titik pada lingkaran
+\u2022 Diameter (d): Tali busur yang melalui pusat lingkaran, d = 2r
+\u2022 Tali busur: Ruas garis yang menghubungkan dua titik pada lingkaran
+\u2022 Busur: Bagian dari keliling lingkaran
+\u2022 Apotema: Jarak terpendek dari pusat ke tali busur (tegak lurus)
+\u2022 Juring: Daerah yang dibatasi dua jari-jari dan sebuah busur
+\u2022 Tembereng: Daerah yang dibatasi tali busur dan busur`,
       },
       {
         judul: 'Keliling dan Luas Lingkaran',
-        isi: `Keliling lingkaran adalah panjang kurva yang membentuk lingkaran tersebut. Keliling dihitung menggunakan konstanta π (pi) yang bernilai sekitar 3,14 atau 22/7.
+        isi: `Keliling lingkaran adalah panjang kurva yang membentuk lingkaran tersebut. Keliling dihitung menggunakan konstanta \u03c0 (pi) yang bernilai sekitar 3,14 atau 22/7.
 
-Rumus Keliling: K = 2πr = πd
+Rumus Keliling: K = 2\u03c0r = \u03c0d
 di mana r adalah jari-jari dan d adalah diameter lingkaran.
 
 Luas lingkaran adalah besarnya daerah yang dilingkupi oleh lingkaran tersebut.
 
-Rumus Luas: L = πr²
+Rumus Luas: L = \u03c0r\u00b2
 
-Contoh: Lingkaran dengan jari-jari 7 cm memiliki keliling = 2 × (22/7) × 7 = 44 cm dan luas = (22/7) × 7² = 154 cm².`,
+Contoh: Lingkaran dengan jari-jari 7 cm memiliki keliling = 2 \u00d7 (22/7) \u00d7 7 = 44 cm dan luas = (22/7) \u00d7 7\u00b2 = 154 cm\u00b2.`,
       },
     ],
     rumus: [
-      { label: 'Keliling Lingkaran', formula: 'K = 2πr = πd' },
-      { label: 'Luas Lingkaran', formula: 'L = πr²' },
-      { label: 'Panjang Busur', formula: 'l = (α/360°) × 2πr' },
-      { label: 'Luas Juring', formula: 'L_j = (α/360°) × πr²' },
+      { label: 'Keliling Lingkaran', formula: 'K = 2\u03c0r = \u03c0d' },
+      { label: 'Luas Lingkaran', formula: 'L = \u03c0r\u00b2' },
+      { label: 'Panjang Busur', formula: 'l = (\u03b1/360\u00b0) \u00d7 2\u03c0r' },
+      { label: 'Luas Juring', formula: 'L_j = (\u03b1/360\u00b0) \u00d7 \u03c0r\u00b2' },
     ],
     contoh: [
       {
         soal: 'Sebuah lingkaran memiliki jari-jari 10 cm. Hitunglah keliling dan luasnya!',
         solusi: [
-          'Diketahui: r = 10 cm, π = 3,14',
-          'Keliling = 2πr = 2 × 3,14 × 10 = 62,8 cm',
-          'Luas = πr² = 3,14 × 10² = 3,14 × 100 = 314 cm²',
+          'Diketahui: r = 10 cm, \u03c0 = 3,14',
+          'Keliling = 2\u03c0r = 2 \u00d7 3,14 \u00d7 10 = 62,8 cm',
+          'Luas = \u03c0r\u00b2 = 3,14 \u00d7 10\u00b2 = 3,14 \u00d7 100 = 314 cm\u00b2',
         ],
       },
     ],
