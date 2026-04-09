@@ -126,7 +126,6 @@ export default function LoginPage() {
         <div className={styles.hint}>
           <p className={styles.hintTitle}>Akun Demo:</p>
           <p>Siswa: <code>ahmad</code> / <code>siswa123</code></p>
-          <p>Guru: <code>guru</code> / <code>guru123</code></p>
         </div>
 
 
