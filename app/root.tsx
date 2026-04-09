@@ -13,6 +13,7 @@ import styles from "./root.module.css";
 import { NavigationHeader } from "./blocks/__global/navigation-header";
 import { FooterInformation } from "./blocks/__global/footer-information";
 import { AuthProvider } from "./hooks/use-auth";
+import { RequireAuth } from "./components/require-auth/require-auth";
 
 export const links: Route.LinksFunction = () => [
   {
@@ -48,7 +49,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <header className={styles.header}>
             <NavigationHeader />
           </header>
-          <main className={styles.main}>{children}</main>
+          <main className={styles.main}>
+            <RequireAuth>{children}</RequireAuth>
+          </main>
           <footer className={styles.footer}>
             <FooterInformation />
           </footer>

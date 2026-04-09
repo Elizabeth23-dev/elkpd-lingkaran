@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import { BookOpen, Eye, EyeOff, LogIn, User, ShieldCheck } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
 import type { UserRole } from '~/data/auth';
@@ -129,9 +129,7 @@ export default function LoginPage() {
           <p>Guru: <code>guru</code> / <code>guru123</code></p>
         </div>
 
-        <div className={styles.backLink}>
-          <Link to="/">← Kembali ke Beranda</Link>
-        </div>
+
       </div>
     </div>
   );
