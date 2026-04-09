@@ -17,6 +17,11 @@ export interface SoalItem {
   kesulitan: 'mudah' | 'sedang' | 'sulit';
 }
 
+export interface SubMateri {
+  judul: string;
+  isi: string;
+}
+
 export const daftarMateri: Materi[] = [
   {
     id: 'definisi-unsur',
@@ -177,7 +182,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
 
 };
 
-export const kontenMateri: Record<string, { teori: string; rumus: Array<{label: string; formula: string}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
+export const kontenMateri: Record<string, { teori: string; subMateri?: SubMateri[]; rumus: Array<{label: string; formula: string}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
   'lingkaran-busur': {
     teori: `Bagian dari lingkaran disebut busur lingkaran. Busur yang lebih kecil disebut busur minor dan bagian yang lebih besar disebut busur mayor. Jika hanya disebutkan kata busur, maka yang dimaksud adalah busur minor.
 
@@ -260,9 +265,20 @@ Misalkan titik P(x₁, y₁) pada lingkaran x²+y²=r². Gradien garis OP adalah
     ],
   },
   'definisi-unsur': {
-    teori: `Lingkaran adalah himpunan semua titik pada bidang datar yang berjarak sama dari suatu titik tertentu. Titik tertentu itu disebut pusat lingkaran dan jarak tersebut disebut jari-jari.
+    teori: '',
+    subMateri: [
+      {
+        judul: 'Pengertian Lingkaran',
+        isi: `Lingkaran adalah himpunan semua titik pada bidang datar yang berjarak sama dari suatu titik tertentu. Titik tertentu itu disebut pusat lingkaran dan jarak tersebut disebut jari-jari.
 
-Unsur-unsur lingkaran meliputi:
+Secara matematis, jika O adalah pusat lingkaran dan r adalah jari-jari, maka lingkaran adalah kumpulan titik P sedemikian sehingga |OP| = r untuk setiap titik P pada lingkaran.
+
+Lingkaran tidak memiliki sudut dan merupakan kurva tertutup yang sempurna. Lingkaran banyak dijumpai dalam kehidupan sehari-hari, seperti roda, jam dinding, dan gelang.`,
+      },
+      {
+        judul: 'Unsur-unsur Lingkaran',
+        isi: `Lingkaran memiliki beberapa unsur penting yang perlu dipahami:
+
 • Pusat (O): Titik yang berjarak sama ke semua titik pada lingkaran
 • Jari-jari (r): Ruas garis dari pusat ke titik pada lingkaran
 • Diameter (d): Tali busur yang melalui pusat lingkaran, d = 2r
@@ -271,6 +287,21 @@ Unsur-unsur lingkaran meliputi:
 • Apotema: Jarak terpendek dari pusat ke tali busur (tegak lurus)
 • Juring: Daerah yang dibatasi dua jari-jari dan sebuah busur
 • Tembereng: Daerah yang dibatasi tali busur dan busur`,
+      },
+      {
+        judul: 'Keliling dan Luas Lingkaran',
+        isi: `Keliling lingkaran adalah panjang kurva yang membentuk lingkaran tersebut. Keliling dihitung menggunakan konstanta π (pi) yang bernilai sekitar 3,14 atau 22/7.
+
+Rumus Keliling: K = 2πr = πd
+di mana r adalah jari-jari dan d adalah diameter lingkaran.
+
+Luas lingkaran adalah besarnya daerah yang dilingkupi oleh lingkaran tersebut.
+
+Rumus Luas: L = πr²
+
+Contoh: Lingkaran dengan jari-jari 7 cm memiliki keliling = 2 × (22/7) × 7 = 44 cm dan luas = (22/7) × 7² = 154 cm².`,
+      },
+    ],
     rumus: [
       { label: 'Keliling Lingkaran', formula: 'K = 2πr = πd' },
       { label: 'Luas Lingkaran', formula: 'L = πr²' },

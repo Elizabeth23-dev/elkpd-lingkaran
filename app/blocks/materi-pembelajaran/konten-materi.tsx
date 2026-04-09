@@ -16,11 +16,26 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
       <div className={styles.container}>
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>📚 Materi Pembelajaran</h2>
-          <div className={styles.teoriText}>
-            {konten.teori.split('\n').map((line, i) => (
-              <p key={i} className={styles.teoriParagraph}>{line}</p>
-            ))}
-          </div>
+          {konten.subMateri && konten.subMateri.length > 0 ? (
+            <div className={styles.subMateriList}>
+              {konten.subMateri.map((sub, i) => (
+                <div key={i} className={styles.subMateriItem}>
+                  <h3 className={styles.subMateriJudul}>{sub.judul}</h3>
+                  <div className={styles.teoriText}>
+                    {sub.isi.split('\n').map((line, j) => (
+                      <p key={j} className={styles.teoriParagraph}>{line}</p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.teoriText}>
+              {konten.teori.split('\n').map((line, i) => (
+                <p key={i} className={styles.teoriParagraph}>{line}</p>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className={styles.section}>
