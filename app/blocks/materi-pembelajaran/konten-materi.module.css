@@ -3,32 +3,6 @@
   background: var(--color-bg);
 }
 
-.ilustrasiWrapper {
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.ilustrasiImg {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-
-.ilustrasiCaption {
-  text-align: center;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface);
-  font-style: italic;
-  border-top: 1px solid var(--color-border-light);
-  margin: 0;
-}
-
 .container {
   max-width: 900px;
   margin: 0 auto;
