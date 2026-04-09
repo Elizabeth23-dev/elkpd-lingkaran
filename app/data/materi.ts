@@ -179,22 +179,57 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       kesulitan: 'sedang',
     },
   ],
-
 };
 
 export const kontenMateri: Record<string, { teori: string; subMateri?: SubMateri[]; rumus: Array<{label: string; formula: string}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
   'lingkaran-busur': {
-    teori: `Bagian dari lingkaran disebut busur lingkaran. Busur yang lebih kecil disebut busur minor dan bagian yang lebih besar disebut busur mayor. Jika hanya disebutkan kata busur, maka yang dimaksud adalah busur minor.
+    teori: '',
+    subMateri: [
+      {
+        judul: 'Busur Minor dan Busur Mayor',
+        isi: `Busur lingkaran adalah bagian dari keliling lingkaran yang dibatasi oleh dua titik pada lingkaran tersebut.
 
-Sudut Pusat adalah sudut yang titik sudutnya terletak pada pusat lingkaran dan kaki-kaki sudutnya adalah jari-jari lingkaran.
-Rumus besar sudut pusat: α = 2θ, artinya besar sudut pusat = 2 × besar sudut keliling yang menghadap busur yang sama.
+Busur Minor adalah bagian busur lingkaran yang lebih kecil dari setengah keliling lingkaran. Busur ini dibatasi oleh dua titik dengan sudut pusat yang kurang dari 180°.
 
-Sudut Keliling adalah sudut yang titik sudutnya terletak pada lingkaran dan kaki-kaki sudutnya berupa tali busur. Tali busur adalah ruas garis yang menghubungkan dua titik pada lingkaran.
-Rumus sudut keliling: θ = ½α, artinya besar sudut keliling = ½ × besar sudut pusat yang menghadap busur yang sama.
+Busur Mayor adalah bagian busur lingkaran yang lebih besar dari setengah keliling lingkaran. Busur ini dibatasi oleh dua titik dengan sudut pusat yang lebih dari 180°.
 
-Kesimpulan penting:
+Catatan: Jika hanya disebutkan kata "busur" tanpa keterangan, maka yang dimaksud adalah busur minor.`,
+      },
+      {
+        judul: 'Sudut Pusat dan Sudut Keliling',
+        isi: `Sudut Pusat adalah sudut yang titik sudutnya terletak pada pusat lingkaran dan kaki-kaki sudutnya adalah jari-jari lingkaran. Sudut pusat dilambangkan dengan huruf α (alfa).
+
+Sudut Keliling adalah sudut yang titik sudutnya terletak pada lingkaran dan kaki-kaki sudutnya berupa tali busur. Tali busur adalah ruas garis yang menghubungkan dua titik pada lingkaran. Sudut keliling dilambangkan dengan huruf θ (theta).
+
+Kedua jenis sudut ini selalu berkaitan dengan busur lingkaran yang mereka "hadapi" atau lingkupi.`,
+      },
+      {
+        judul: 'Hubungan Sudut Pusat dan Sudut Keliling',
+        isi: `Terdapat hubungan penting antara sudut pusat dan sudut keliling yang menghadap busur yang sama:
+
+• Sudut pusat = 2 × sudut keliling: α = 2θ
+• Sudut keliling = ½ × sudut pusat: θ = ½α
+
+Sifat-sifat penting:
 • Semua sudut keliling yang menghadap busur yang sama memiliki besar yang sama
-• Sudut keliling yang menghadap diameter selalu bernilai 90°`,
+• Sudut keliling yang menghadap diameter (busur setengah lingkaran) selalu bernilai 90°
+• Dua sudut keliling yang menghadap busur yang sama dari sisi berlawanan berjumlah 180° (sudut-sudut dalam segiempat tali busur)`,
+      },
+      {
+        judul: 'Panjang Busur dan Luas Juring',
+        isi: `Panjang Busur adalah panjang kurva busur yang dibatasi oleh dua titik pada lingkaran. Panjang busur sebanding dengan besar sudut pusat yang menghadapinya.
+
+Rumus Panjang Busur:
+l = (α / 360°) × 2πr
+
+Luas Juring adalah luas daerah yang dibatasi oleh dua jari-jari dan sebuah busur lingkaran. Luas juring juga sebanding dengan besar sudut pusat.
+
+Rumus Luas Juring:
+L = (α / 360°) × πr²
+
+di mana α adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari lingkaran.`,
+      },
+    ],
     rumus: [
       { label: 'Sudut Pusat (α) terhadap Sudut Keliling (θ)', formula: 'α = 2θ' },
       { label: 'Sudut Keliling (θ) terhadap Sudut Pusat (α)', formula: 'θ = ½α' },
