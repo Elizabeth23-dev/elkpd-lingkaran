@@ -1,6 +1,7 @@
 import { Award, BookOpen, CheckCircle2, TrendingUp, RotateCcw } from "lucide-react";
 import classnames from "classnames";
 import { useProgress } from "~/hooks/use-progress";
+import { useAuth } from "~/hooks/use-auth";
 import styles from "./bagian-progress.module.css";
 
 export interface BagianProgressProps {
@@ -8,6 +9,9 @@ export interface BagianProgressProps {
 }
 
 export function BagianProgress({ className }: BagianProgressProps) {
+  const { user } = useAuth();
+  const siswaId = user?.id ?? '';
+
   const {
     materiDipelajari,
     totalMateri,
@@ -16,7 +20,7 @@ export function BagianProgress({ className }: BagianProgressProps) {
     skorRataRata,
     progressKeseluruhan,
     reset,
-  } = useProgress();
+  } = useProgress(siswaId);
 
   const stats = [
     { icon: BookOpen, label: 'Materi Dipelajari', value: String(materiDipelajari), total: String(totalMateri), color: 'primary' },

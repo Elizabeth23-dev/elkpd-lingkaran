@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
   Users, BookOpen, BarChart2, Award, Clock, CheckCircle,
@@ -7,6 +7,7 @@ import {
 import { useAuth } from '~/hooks/use-auth';
 import { daftarAkun } from '~/data/auth';
 import { daftarMateri } from '~/data/materi';
+import { hasilKey } from '~/hooks/use-latihan';
 import styles from './admin.module.css';
 
 export function meta() {
@@ -14,14 +15,6 @@ export function meta() {
 }
 
 const siswaList = daftarAkun.filter((u) => u.role === 'siswa');
-
-function getMockHasil(siswaId: string, topicId: string) {
-  // Simulate varied scores per student per topic deterministically
-  const seed = siswaId.charCodeAt(siswaId.length - 1) + topicId.charCodeAt(0);
-  const score = ((seed * 3) % 4) + 2; // 2-5 correct out of 5
-  const timeTaken = 180 + ((seed * 7) % 420);
-  return { score, total: 5, timeTaken, done: seed % 5 !== 0 };
-}
 
 function formatTime(secs: number): string {
   const m = Math.floor(secs / 60);
@@ -42,17 +35,20 @@ export default function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Set of siswa IDs whose nilai have been reset (will show all belum)
-  const [resetSiswa, setResetSiswa] = useState<Set<string>>(new Set());
-
   const handleResetNilai = useCallback((siswaId: string) => {
-    setResetSiswa((prev) => new Set(prev).add(siswaId));
+    daftarMateri.forEach((m) => sessionStorage.removeItem(hasilKey(siswaId, m.id)));
   }, []);
 
   const getHasil = useCallback((siswaId: string, topicId: string) => {
-    if (resetSiswa.has(siswaId)) return { score: 0, total: 5, timeTaken: 0, done: false };
-    return getMockHasil(siswaId, topicId);
-  }, [resetSiswa]);
+    try {
+      const raw = sessionStorage.getItem(hasilKey(siswaId, topicId));
+      if (raw) {
+        const data = JSON.parse(raw) as { score: number; total: number; timeTaken: number };
+        return { score: data.score, total: data.total, timeTaken: data.timeTaken, done: true };
+      }
+    } catch { /* ignore */ }
+    return { score: 0, total: 5, timeTaken: 0, done: false };
+  }, []);
 
   useEffect(() => {
     if (!user || user.role !== 'guru') {
@@ -70,14 +66,21 @@ export default function AdminPage() {
   const totalSiswa = siswaList.length;
   const totalMateri = daftarMateri.length;
 
-  // Aggregate stats
+  // Aggregate stats — baca langsung dari sessionStorage
   let totalDone = 0;
   let totalScore = 0;
   let totalPossible = 0;
   siswaList.forEach((s) => {
     daftarMateri.forEach((m) => {
-      const h = getMockHasil(s.id, m.id);
-      if (h.done) { totalDone++; totalScore += h.score; totalPossible += h.total; }
+      try {
+        const raw = sessionStorage.getItem(hasilKey(s.id, m.id));
+        if (raw) {
+          const data = JSON.parse(raw) as { score: number; total: number };
+          totalDone++;
+          totalScore += data.score;
+          totalPossible += data.total;
+        }
+      } catch { /* ignore */ }
     });
   });
   const avgScore = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
@@ -169,9 +172,7 @@ export default function AdminPage() {
                   const totalScoreS = hasilList.filter((h) => h.done).reduce((a, h) => a + h.score, 0);
                   const totalPossS = hasilList.filter((h) => h.done).reduce((a, h) => a + h.total, 0);
                   const avgS = totalPossS > 0 ? Math.round((totalScoreS / totalPossS) * 100) : 0;
-                  const isReset = resetSiswa.has(siswa.id);
-
-                  return (
+                                  return (
                     <tr key={siswa.id}>
                       <td className={styles.tdName}>
                         <div className={styles.avatarCell}>
@@ -206,13 +207,12 @@ export default function AdminPage() {
                       </td>
                       <td className={styles.tdCenter}>
                         <button
-                          className={`${styles.resetBtn} ${isReset ? styles.resetBtnDisabled : ''}`}
+                          className={styles.resetBtn}
                           onClick={() => handleResetNilai(siswa.id)}
-                          disabled={isReset}
-                          title={isReset ? 'Nilai sudah direset' : 'Reset nilai siswa ini'}
+                          title="Reset nilai siswa ini"
                         >
                           <RotateCcw size={13} />
-                          {isReset ? 'Direset' : 'Reset'}
+                          Reset
                         </button>
                       </td>
                     </tr>

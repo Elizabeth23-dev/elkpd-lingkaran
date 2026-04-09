@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { useAuth } from "~/hooks/use-auth";
+import { hasilKey } from "~/hooks/use-latihan";
 
 export interface HasilData {
   topicId: string;
@@ -10,13 +12,15 @@ export interface HasilData {
 }
 
 export function useHasil(topicId: string): HasilData | null {
+  const { user } = useAuth();
   return useMemo(() => {
+    if (!user) return null;
     try {
-      const raw = sessionStorage.getItem(`hasil-${topicId}`);
+      const raw = sessionStorage.getItem(hasilKey(user.id, topicId));
       if (raw) return JSON.parse(raw) as HasilData;
     } catch {
       /* ignore */
     }
     return null;
-  }, [topicId]);
+  }, [topicId, user]);
 }

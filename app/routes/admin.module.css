@@ -340,13 +340,6 @@
   color: white;
 }
 
-.resetBtnDisabled {
-  border-color: var(--color-border);
-  color: var(--color-text-muted);
-  cursor: default;
-  opacity: 0.7;
-}
-
 .avgCell {
   display: flex;
   flex-direction: column;

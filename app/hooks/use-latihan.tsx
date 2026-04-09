@@ -1,11 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { soalPerTopik } from "~/data/materi";
+import { useAuth } from "~/hooks/use-auth";
 
 const WAKTU_AWAL = 10 * 60; // 10 menit
 
+export function hasilKey(siswaId: string, topicId: string) {
+  return `hasil-${siswaId}-${topicId}`;
+}
+
 export function useLatihan(topicId: string) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const soalList = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,13 +22,13 @@ export function useLatihan(topicId: string) {
 
   // Reset semua state dan hapus data hasil lama saat masuk halaman latihan
   useEffect(() => {
-    sessionStorage.removeItem(`hasil-${topicId}`);
+    if (user) sessionStorage.removeItem(hasilKey(user.id, topicId));
     setCurrentIndex(0);
     setAnswers({});
     setSubmitted({});
     setTimeLeft(WAKTU_AWAL);
     setIsFinished(false);
-  }, [topicId]);
+  }, [topicId, user]);
 
   useEffect(() => {
     if (isFinished) return;
@@ -72,9 +78,9 @@ export function useLatihan(topicId: string) {
       total: soalList.length,
       timeTaken: WAKTU_AWAL - timeLeft,
     };
-    sessionStorage.setItem(`hasil-${topicId}`, JSON.stringify(resultData));
+    if (user) sessionStorage.setItem(hasilKey(user.id, topicId), JSON.stringify(resultData));
     navigate(`/hasil/${topicId}`);
-  }, [topicId, answers, submitted, soalList, timeLeft, navigate]);
+  }, [topicId, answers, submitted, soalList, timeLeft, navigate, user]);
 
   return {
     soalList,
