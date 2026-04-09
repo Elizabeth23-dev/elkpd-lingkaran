@@ -12,6 +12,7 @@ import styles from "./root.module.css";
 
 import { NavigationHeader } from "./blocks/__global/navigation-header";
 import { FooterInformation } from "./blocks/__global/footer-information";
+import { AuthProvider } from "./hooks/use-auth";
 
 export const links: Route.LinksFunction = () => [
   {
@@ -58,7 +59,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
 }
 
 export const ErrorBoundary = ErrorBoundaryRoot;
