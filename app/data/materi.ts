@@ -6,6 +6,7 @@ export interface Materi {
   estimasiWaktu: string;
   icon: string;
   topik: string[];
+  ilustrasi?: string;
 }
 
 export interface SoalItem {
@@ -26,6 +27,7 @@ export const daftarMateri: Materi[] = [
     estimasiWaktu: '30 menit',
     icon: 'circle',
     topik: ['Pengertian Lingkaran', 'Unsur-unsur Lingkaran', 'Keliling dan Luas Lingkaran'],
+    ilustrasi: '/ilustrasi/definisi-unsur.png',
   },
   {
     id: 'lingkaran-busur',
@@ -35,6 +37,7 @@ export const daftarMateri: Materi[] = [
     estimasiWaktu: '45 menit',
     icon: 'git-commit-horizontal',
     topik: ['Busur Minor dan Busur Mayor', 'Sudut Pusat dan Sudut Keliling', 'Hubungan Sudut Pusat dan Sudut Keliling', 'Panjang Busur dan Luas Juring'],
+    ilustrasi: '/ilustrasi/lingkaran-busur.png',
   },
   {
     id: 'lingkaran-garis-singgung',
@@ -44,6 +47,7 @@ export const daftarMateri: Materi[] = [
     estimasiWaktu: '45 menit',
     icon: 'git-branch',
     topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung', 'Persamaan Garis Singgung di Titik pada Lingkaran', 'Persamaan Garis Singgung dari Titik Luar'],
+    ilustrasi: '/ilustrasi/lingkaran-garis-singgung.png',
   },
   {
     id: 'persamaan-lingkaran',
@@ -53,6 +57,7 @@ export const daftarMateri: Materi[] = [
     estimasiWaktu: '45 menit',
     icon: 'function-square',
     topik: ['Persamaan Baku Lingkaran', 'Persamaan Umum Lingkaran', 'Menentukan Pusat dan Jari-jari'],
+    ilustrasi: '/ilustrasi/persamaan-lingkaran.png',
   },
 ];
 

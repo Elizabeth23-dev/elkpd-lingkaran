@@ -14,6 +14,17 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
   return (
     <div className={classnames(styles.root, className)}>
       <div className={styles.container}>
+        {materi.ilustrasi && (
+          <div className={styles.ilustrasiWrapper}>
+            <img
+              src={materi.ilustrasi}
+              alt={`Ilustrasi ${materi.title}`}
+              className={styles.ilustrasiImg}
+            />
+            <p className={styles.ilustrasiCaption}>Ilustrasi: {materi.title}</p>
+          </div>
+        )}
+
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>📚 Materi Pembelajaran</h2>
           <div className={styles.teoriText}>
