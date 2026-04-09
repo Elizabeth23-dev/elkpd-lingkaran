@@ -318,6 +318,35 @@
   font-size: var(--text-sm);
 }
 
+.resetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-error, #ef4444);
+  background: transparent;
+  color: var(--color-error, #ef4444);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-family: var(--family-body);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.resetBtn:hover:not(:disabled) {
+  background: var(--color-error, #ef4444);
+  color: white;
+}
+
+.resetBtnDisabled {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.7;
+}
+
 .avgCell {
   display: flex;
   flex-direction: column;

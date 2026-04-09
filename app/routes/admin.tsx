@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
   Users, BookOpen, BarChart2, Award, Clock, CheckCircle,
-  XCircle, LogOut, ChevronRight, Layers
+  XCircle, LogOut, ChevronRight, Layers, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
 import { daftarAkun } from '~/data/auth';
@@ -41,6 +41,18 @@ function gradeLabel(score: number, total: number): { label: string; className: s
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Set of siswa IDs whose nilai have been reset (will show all belum)
+  const [resetSiswa, setResetSiswa] = useState<Set<string>>(new Set());
+
+  const handleResetNilai = useCallback((siswaId: string) => {
+    setResetSiswa((prev) => new Set(prev).add(siswaId));
+  }, []);
+
+  const getHasil = useCallback((siswaId: string, topicId: string) => {
+    if (resetSiswa.has(siswaId)) return { score: 0, total: 5, timeTaken: 0, done: false };
+    return getMockHasil(siswaId, topicId);
+  }, [resetSiswa]);
 
   useEffect(() => {
     if (!user || user.role !== 'guru') {
@@ -147,15 +159,17 @@ export default function AdminPage() {
                     <th key={m.id}>{m.title.split(' ').slice(0, 2).join(' ')}</th>
                   ))}
                   <th>Avg</th>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {siswaList.map((siswa) => {
-                  const hasilList = daftarMateri.map((m) => getMockHasil(siswa.id, m.id));
+                  const hasilList = daftarMateri.map((m) => getHasil(siswa.id, m.id));
                   const doneCount = hasilList.filter((h) => h.done).length;
                   const totalScoreS = hasilList.filter((h) => h.done).reduce((a, h) => a + h.score, 0);
                   const totalPossS = hasilList.filter((h) => h.done).reduce((a, h) => a + h.total, 0);
                   const avgS = totalPossS > 0 ? Math.round((totalScoreS / totalPossS) * 100) : 0;
+                  const isReset = resetSiswa.has(siswa.id);
 
                   return (
                     <tr key={siswa.id}>
@@ -190,6 +204,17 @@ export default function AdminPage() {
                           <span className={styles.doneCount}>{doneCount}/{daftarMateri.length}</span>
                         </div>
                       </td>
+                      <td className={styles.tdCenter}>
+                        <button
+                          className={`${styles.resetBtn} ${isReset ? styles.resetBtnDisabled : ''}`}
+                          onClick={() => handleResetNilai(siswa.id)}
+                          disabled={isReset}
+                          title={isReset ? 'Nilai sudah direset' : 'Reset nilai siswa ini'}
+                        >
+                          <RotateCcw size={13} />
+                          {isReset ? 'Direset' : 'Reset'}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -207,7 +232,7 @@ export default function AdminPage() {
             {siswaList.map((siswa) => {
               const hasilList = daftarMateri.map((m) => ({
                 materi: m,
-                hasil: getMockHasil(siswa.id, m.id),
+                hasil: getHasil(siswa.id, m.id),
               }));
               const done = hasilList.filter((h) => h.hasil.done);
               const avg = done.length > 0
