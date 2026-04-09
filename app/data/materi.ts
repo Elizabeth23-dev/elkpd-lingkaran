@@ -381,7 +381,7 @@ Contoh: Lingkaran dengan jari-jari 7 cm memiliki keliling = 2 \u00d7 (22/7) \u00
       { label: 'Keliling Lingkaran', formula: 'K = 2\u03c0r = \u03c0d' },
       { label: 'Luas Lingkaran', formula: 'L = \u03c0r\u00b2' },
       { label: 'Panjang Busur', formula: 'l = (\u03b1/360\u00b0) \u00d7 2\u03c0r' },
-      { label: 'Luas Juring', formula: 'L_j = (\u03b1/360\u00b0) \u00d7 \u03c0r\u00b2' },
+      { label: 'Luas Juring', formula: 'Lⱼ = (α/360°) × πr²' },
     ],
     contoh: [
       {
