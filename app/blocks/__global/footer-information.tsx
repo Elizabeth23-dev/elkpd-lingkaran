@@ -34,11 +34,11 @@ export function FooterInformation({ className }: FooterInformationProps) {
           </div>
           <div className={styles.infoItem}>
             <span className={styles.infoLabel}>Semester</span>
-            <span className={styles.infoValue}>Ganjil 2024/2025</span>
+            <span className={styles.infoValue}>Genap 2025/2026</span>
           </div>
           <div className={styles.infoItem}>
             <span className={styles.infoLabel}>Materi</span>
-            <span className={styles.infoValue}>Persamaan Lingkaran</span>
+            <span className={styles.infoValue}>Lingkaran</span>
           </div>
         </div>
 
