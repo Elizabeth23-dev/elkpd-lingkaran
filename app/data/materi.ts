@@ -45,15 +45,6 @@ export const daftarMateri: Materi[] = [
     icon: 'git-branch',
     topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung', 'Persamaan Garis Singgung di Titik pada Lingkaran', 'Persamaan Garis Singgung dari Titik Luar'],
   },
-  {
-    id: 'persamaan-lingkaran',
-    title: 'Persamaan Lingkaran',
-    subtitle: 'Aljabar & Geometri',
-    description: 'Pelajari persamaan lingkaran berpusat di titik asal maupun titik sembarang, serta cara menentukan persamaannya.',
-    estimasiWaktu: '45 menit',
-    icon: 'function-square',
-    topik: ['Persamaan Baku Lingkaran', 'Persamaan Umum Lingkaran', 'Menentukan Pusat dan Jari-jari'],
-  },
 ];
 
 export const soalPerTopik: Record<string, SoalItem[]> = {
@@ -183,48 +174,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       kesulitan: 'sedang',
     },
   ],
-  'persamaan-lingkaran': [
-    {
-      id: 1,
-      pertanyaan: 'Persamaan lingkaran berpusat di titik asal O(0,0) dengan jari-jari r adalah...',
-      pilihan: ['x + y = r', 'x² + y² = r', 'x² + y² = r²', '(x+a)² + (y+b)² = r²'],
-      jawabanBenar: 2,
-      penjelasan: 'Persamaan baku lingkaran berpusat di titik asal O(0,0) dengan jari-jari r adalah x² + y² = r².',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 2,
-      pertanyaan: 'Lingkaran (x-3)² + (y+4)² = 25 memiliki pusat dan jari-jari...',
-      pilihan: ['Pusat (3,-4), r=25', 'Pusat (-3,4), r=5', 'Pusat (3,-4), r=5', 'Pusat (-3,4), r=25'],
-      jawabanBenar: 2,
-      penjelasan: 'Dari bentuk (x-a)² + (y-b)² = r², pusat adalah (a,b) = (3,-4) dan r = √25 = 5.',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 3,
-      pertanyaan: 'Persamaan lingkaran dengan pusat (2,-1) dan jari-jari 4 adalah...',
-      pilihan: ['(x-2)² + (y+1)² = 4', '(x+2)² + (y-1)² = 16', '(x-2)² + (y+1)² = 16', '(x-2)² + (y-1)² = 16'],
-      jawabanBenar: 2,
-      penjelasan: 'Persamaan lingkaran berpusat di (a,b) dengan jari-jari r: (x-a)² + (y-b)² = r². Jadi: (x-2)² + (y-(-1))² = 4² → (x-2)² + (y+1)² = 16.',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 4,
-      pertanyaan: 'Ubah persamaan x² + y² - 6x + 4y - 12 = 0 ke bentuk baku. Pusat dan jari-jarinya adalah...',
-      pilihan: ['Pusat (3,-2), r=5', 'Pusat (-3,2), r=5', 'Pusat (3,-2), r=25', 'Pusat (-6,4), r=12'],
-      jawabanBenar: 0,
-      penjelasan: 'Melengkapkan kuadrat: (x²-6x+9) + (y²+4y+4) = 12+9+4 → (x-3)² + (y+2)² = 25. Jadi pusat (3,-2) dan r = √25 = 5.',
-      kesulitan: 'sulit',
-    },
-    {
-      id: 5,
-      pertanyaan: 'Titik A(1,2) berada di dalam, pada, atau di luar lingkaran x² + y² = 10?',
-      pilihan: ['Di dalam lingkaran', 'Pada lingkaran', 'Di luar lingkaran', 'Tidak dapat ditentukan'],
-      jawabanBenar: 0,
-      penjelasan: 'Substitusi x=1, y=2: 1² + 2² = 1+4 = 5. Karena 5 < 10 (= r²), maka titik A(1,2) berada di dalam lingkaran.',
-      kesulitan: 'sedang',
-    },
-  ],
+
 };
 
 export const kontenMateri: Record<string, { teori: string; rumus: Array<{label: string; formula: string}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
@@ -334,38 +284,6 @@ Unsur-unsur lingkaran meliputi:
           'Diketahui: r = 10 cm, π = 3,14',
           'Keliling = 2πr = 2 × 3,14 × 10 = 62,8 cm',
           'Luas = πr² = 3,14 × 10² = 3,14 × 100 = 314 cm²',
-        ],
-      },
-    ],
-  },
-  'persamaan-lingkaran': {
-    teori: `Persamaan lingkaran adalah persamaan yang menggambarkan himpunan semua titik yang membentuk lingkaran.
-
-Ada dua bentuk persamaan lingkaran:
-1. Bentuk Baku (Standar): (x-a)² + (y-b)² = r²
-   • (a,b) adalah pusat lingkaran
-   • r adalah jari-jari
-
-2. Bentuk Umum: x² + y² + Dx + Ey + F = 0
-   • Pusat: (-D/2, -E/2)
-   • Jari-jari: r = √((D/2)² + (E/2)² - F)
-
-Lingkaran berpusat di titik asal O(0,0) memiliki persamaan: x² + y² = r²`,
-    rumus: [
-      { label: 'Persamaan Baku (pusat sembarang)', formula: '(x-a)² + (y-b)² = r²' },
-      { label: 'Persamaan Baku (pusat di O)', formula: 'x² + y² = r²' },
-      { label: 'Persamaan Umum', formula: 'x² + y² + Dx + Ey + F = 0' },
-      { label: 'Pusat dari Persamaan Umum', formula: 'Pusat = (-D/2, -E/2)' },
-      { label: 'Jari-jari dari Persamaan Umum', formula: 'r = √((D/2)² + (E/2)² - F)' },
-    ],
-    contoh: [
-      {
-        soal: 'Tentukan persamaan lingkaran dengan pusat (2,3) dan jari-jari 4!',
-        solusi: [
-          'Pusat (a,b) = (2,3), r = 4',
-          'Substitusi ke persamaan baku: (x-a)² + (y-b)² = r²',
-          '(x-2)² + (y-3)² = 4²',
-          '(x-2)² + (y-3)² = 16',
         ],
       },
     ],

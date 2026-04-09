@@ -12,11 +12,10 @@ const iconColors = [
   { bg: "#eef2ff", icon: "#4f46e5" },
   { bg: "#ecfeff", icon: "#06b6d4" },
   { bg: "#ecfdf5", icon: "#10b981" },
-  { bg: "#fffbeb", icon: "#f59e0b" },
 ];
 
-const statusLabels = ["Selesai", "Belum dimulai", "Sedang dipelajari", "Belum dimulai"];
-const statusTypes: Array<"done" | "active" | "idle"> = ["done", "active", "idle", "idle"];
+const statusLabels = ["Selesai", "Sedang dipelajari", "Belum dimulai"];
+const statusTypes: Array<"done" | "active" | "idle"> = ["done", "active", "idle"];
 
 export function DaftarMateri({ className }: DaftarMateriProps) {
   return (
