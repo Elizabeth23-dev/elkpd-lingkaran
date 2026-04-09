@@ -14,6 +14,16 @@ export function useLatihan(topicId: string) {
   const [timeLeft, setTimeLeft] = useState(WAKTU_AWAL);
   const [isFinished, setIsFinished] = useState(false);
 
+  // Reset semua state dan hapus data hasil lama saat masuk halaman latihan
+  useEffect(() => {
+    sessionStorage.removeItem(`hasil-${topicId}`);
+    setCurrentIndex(0);
+    setAnswers({});
+    setSubmitted({});
+    setTimeLeft(WAKTU_AWAL);
+    setIsFinished(false);
+  }, [topicId]);
+
   useEffect(() => {
     if (isFinished) return;
     if (timeLeft <= 0) {
