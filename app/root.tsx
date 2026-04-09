@@ -44,13 +44,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className={styles.body}>
-        <header className={styles.header}>
-          <NavigationHeader />
-        </header>
-        <main className={styles.main}>{children}</main>
-        <footer className={styles.footer}>
-          <FooterInformation />
-        </footer>
+        <AuthProvider>
+          <header className={styles.header}>
+            <NavigationHeader />
+          </header>
+          <main className={styles.main}>{children}</main>
+          <footer className={styles.footer}>
+            <FooterInformation />
+          </footer>
+        </AuthProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -59,11 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <Outlet />
-    </AuthProvider>
-  );
+  return <Outlet />;
 }
 
 export const ErrorBoundary = ErrorBoundaryRoot;
