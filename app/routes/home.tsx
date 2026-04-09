@@ -1,16 +1,14 @@
-import type { Route } from "./+types/home";
+import { HeroSection } from "../blocks/home/hero-section";
+import { DaftarMateri } from "../blocks/home/daftar-materi";
+import { BagianProgress } from "../blocks/home/bagian-progress";
 import styles from "./home.module.css";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Empty Template" },
-    {
-      name: "description",
-      content: "A welcoming empty template ready for content generation",
-    },
-  ];
-}
-
 export default function Home() {
-  return <main className={styles.home}>I'm an empty template.</main>;
+  return (
+    <div className={styles.root}>
+      <HeroSection />
+      <DaftarMateri />
+      <BagianProgress />
+    </div>
+  );
 }

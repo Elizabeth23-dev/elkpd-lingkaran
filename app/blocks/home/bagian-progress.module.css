@@ -1,0 +1,160 @@
+.root {
+  padding: var(--space-16) 0;
+  background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+.title {
+  font-family: var(--family-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+}
+
+.progressBar {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-card);
+}
+
+.progressBarLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.progressBarTitle {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+}
+
+.progressBarValue {
+  font-family: var(--family-display);
+  font-weight: 700;
+  font-size: var(--text-xl);
+  color: var(--color-primary);
+}
+
+.bar {
+  background: var(--color-surface-tertiary);
+  border-radius: var(--radius-full);
+  height: 12px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: var(--radius-full);
+  transition: width 1s ease;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.statCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+}
+
+.statIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.color_primary .statIcon {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+
+.color_success .statIcon {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.color_accent .statIcon {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+}
+
+.color_secondary .statIcon {
+  background: var(--color-secondary-bg);
+  color: var(--color-secondary);
+}
+
+.statBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.statNum {
+  font-family: var(--family-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.statTotal {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,128 @@
+.root {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-5) 0;
+  position: sticky;
+  top: 64px;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.breadcrumbLink {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  opacity: 0.75;
+}
+
+.sep {
+  color: var(--color-text-muted);
+}
+
+.breadcrumbCurrent {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.timerWarning {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.title {
+  font-family: var(--family-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.progressBar {
+  flex: 1;
+  background: var(--color-surface-tertiary);
+  border-radius: var(--radius-full);
+  height: 8px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.progressLabel {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 36px;
+  text-align: right;
+}

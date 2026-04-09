@@ -1,0 +1,22 @@
+.body {
+  font-family: var(--family-body);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.main {
+  flex: 1;
+}
+
+.footer {
+  margin-top: auto;
+}

@@ -1,0 +1,136 @@
+.root {
+  background: var(--color-text-primary);
+  color: var(--color-text-inverse);
+  padding-top: var(--space-12);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6) var(--space-10);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-12);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brandIcon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-family: var(--family-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: white;
+}
+
+.brandDesc {
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.6);
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+.colTitle {
+  font-family: var(--family-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-4);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.infoLabel {
+  font-size: var(--text-xs);
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.infoValue {
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.contactItem:hover {
+  color: var(--color-secondary-light);
+}
+
+.helpBadge {
+  margin-top: var(--space-2);
+  background: rgba(79, 70, 229, 0.3);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-primary-light);
+  line-height: 1.5;
+}
+
+.bottom {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: var(--space-5) var(--space-6);
+  text-align: center;
+}
+
+.bottomText {
+  font-size: var(--text-xs);
+  color: rgba(255,255,255,0.35);
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+}
