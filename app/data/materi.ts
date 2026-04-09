@@ -28,6 +28,24 @@ export const daftarMateri: Materi[] = [
     topik: ['Pengertian Lingkaran', 'Unsur-unsur Lingkaran', 'Keliling dan Luas Lingkaran'],
   },
   {
+    id: 'lingkaran-busur',
+    title: 'Lingkaran dan Busur Lingkaran',
+    subtitle: 'Sudut Pusat & Sudut Keliling',
+    description: 'Pelajari hubungan antara lingkaran dan busur lingkaran, sudut pusat, sudut keliling, serta panjang busur dan luas juring berdasarkan sudut yang menghadapinya.',
+    estimasiWaktu: '45 menit',
+    icon: 'git-commit-horizontal',
+    topik: ['Busur Minor dan Busur Mayor', 'Sudut Pusat dan Sudut Keliling', 'Hubungan Sudut Pusat dan Sudut Keliling', 'Panjang Busur dan Luas Juring'],
+  },
+  {
+    id: 'lingkaran-garis-singgung',
+    title: 'Lingkaran dan Garis Singgung',
+    subtitle: 'Geometri Analitik',
+    description: 'Pelajari pengertian dan sifat garis singgung lingkaran, serta cara menentukan persamaan garis singgung melalui titik pada lingkaran maupun dari titik di luar lingkaran.',
+    estimasiWaktu: '45 menit',
+    icon: 'git-branch',
+    topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung', 'Persamaan Garis Singgung di Titik pada Lingkaran', 'Persamaan Garis Singgung dari Titik Luar'],
+  },
+  {
     id: 'persamaan-lingkaran',
     title: 'Persamaan Lingkaran',
     subtitle: 'Aljabar & Geometri',
@@ -36,27 +54,93 @@ export const daftarMateri: Materi[] = [
     icon: 'function-square',
     topik: ['Persamaan Baku Lingkaran', 'Persamaan Umum Lingkaran', 'Menentukan Pusat dan Jari-jari'],
   },
-  {
-    id: 'garis-singgung',
-    title: 'Garis Singgung Lingkaran',
-    subtitle: 'Geometri Analitik',
-    description: 'Pelajari sifat-sifat garis singgung, cara menentukan persamaan garis singgung di titik pada lingkaran dan dari titik luar lingkaran.',
-    estimasiWaktu: '45 menit',
-    icon: 'git-commit-horizontal',
-    topik: ['Sifat Garis Singgung', 'Garis Singgung di Titik pada Lingkaran', 'Garis Singgung dari Titik Luar'],
-  },
-  {
-    id: 'hubungan-lingkaran',
-    title: 'Hubungan Antar Lingkaran',
-    subtitle: 'Geometri Lanjutan',
-    description: 'Pelajari posisi relatif dua lingkaran, garis singgung persekutuan dalam dan luar, serta menentukan panjang garis singgung persekutuan.',
-    estimasiWaktu: '50 menit',
-    icon: 'circles',
-    topik: ['Posisi Relatif Dua Lingkaran', 'Garis Singgung Persekutuan', 'Panjang Garis Singgung Persekutuan'],
-  },
 ];
 
 export const soalPerTopik: Record<string, SoalItem[]> = {
+  'lingkaran-busur': [
+    {
+      id: 1,
+      pertanyaan: 'Bagian dari lingkaran yang lebih kecil dari setengah lingkaran disebut...',
+      pilihan: ['Busur mayor', 'Busur minor', 'Juring', 'Tembereng'],
+      jawabanBenar: 1,
+      penjelasan: 'Busur minor adalah bagian busur lingkaran yang lebih kecil (kurang dari setengah keliling), sedangkan busur mayor adalah bagian yang lebih besar.',
+      kesulitan: 'mudah',
+    },
+    {
+      id: 2,
+      pertanyaan: 'Sudut pusat ∠AOB = 100°. Besar sudut keliling ∠ACB yang menghadap busur yang sama adalah...',
+      pilihan: ['200°', '100°', '50°', '25°'],
+      jawabanBenar: 2,
+      penjelasan: 'Sudut keliling = ½ × sudut pusat = ½ × 100° = 50°. Sudut keliling selalu setengah dari sudut pusat yang menghadap busur yang sama.',
+      kesulitan: 'mudah',
+    },
+    {
+      id: 3,
+      pertanyaan: 'Diketahui sudut keliling ∠PQR = 35°. Besar sudut pusat ∠POR yang menghadap busur yang sama adalah...',
+      pilihan: ['17,5°', '35°', '70°', '140°'],
+      jawabanBenar: 2,
+      penjelasan: 'Sudut pusat = 2 × sudut keliling = 2 × 35° = 70°. Sudut pusat selalu dua kali sudut keliling yang menghadap busur yang sama.',
+      kesulitan: 'mudah',
+    },
+    {
+      id: 4,
+      pertanyaan: 'Lingkaran dengan jari-jari 21 cm memiliki sudut pusat 120°. Panjang busurnya adalah... (menggunakan π = 22/7)',
+      pilihan: ['22 cm', '44 cm', '66 cm', '88 cm'],
+      jawabanBenar: 1,
+      penjelasan: 'Panjang busur = (α/360°) × 2πr = (120/360) × 2 × (22/7) × 21 = (1/3) × 132 = 44 cm.',
+      kesulitan: 'sedang',
+    },
+    {
+      id: 5,
+      pertanyaan: 'Dua sudut keliling menghadap busur yang sama. Pernyataan yang benar adalah...',
+      pilihan: ['Keduanya memiliki besar sudut yang berbeda', 'Keduanya memiliki besar sudut yang sama', 'Jumlah keduanya selalu 180°', 'Keduanya saling berpelurus'],
+      jawabanBenar: 1,
+      penjelasan: 'Semua sudut keliling yang menghadap busur yang sama akan selalu memiliki besar yang sama, yaitu setengah dari sudut pusat yang menghadap busur tersebut.',
+      kesulitan: 'sedang',
+    },
+  ],
+  'lingkaran-garis-singgung': [
+    {
+      id: 1,
+      pertanyaan: 'Garis singgung lingkaran memiliki berapa titik persekutuan dengan lingkaran?',
+      pilihan: ['Tidak ada', 'Tepat satu titik', 'Dua titik', 'Tiga titik'],
+      jawabanBenar: 1,
+      penjelasan: 'Garis singgung lingkaran adalah garis yang memiliki tepat satu titik persekutuan dengan lingkaran. Titik tersebut disebut titik singgung.',
+      kesulitan: 'mudah',
+    },
+    {
+      id: 2,
+      pertanyaan: 'Sifat garis singgung lingkaran di titik singgung terhadap jari-jari adalah...',
+      pilihan: ['Sejajar', 'Tegak lurus', 'Membentuk sudut 45°', 'Berpotongan di titik lain'],
+      jawabanBenar: 1,
+      penjelasan: 'Salah satu sifat utama garis singgung lingkaran adalah tegak lurus terhadap jari-jari lingkaran di titik singgung.',
+      kesulitan: 'mudah',
+    },
+    {
+      id: 3,
+      pertanyaan: 'Persamaan garis singgung lingkaran x²+y²=25 di titik (3,4) adalah...',
+      pilihan: ['3x + 4y = 5', '3x + 4y = 25', '4x + 3y = 25', 'x + y = 25'],
+      jawabanBenar: 1,
+      penjelasan: 'Menggunakan rumus x₁x + y₁y = r²: 3x + 4y = 25.',
+      kesulitan: 'sedang',
+    },
+    {
+      id: 4,
+      pertanyaan: 'Dari titik di luar lingkaran, berapa banyak garis singgung yang dapat dibuat ke lingkaran tersebut?',
+      pilihan: ['Satu', 'Dua', 'Tiga', 'Tak terhingga'],
+      jawabanBenar: 1,
+      penjelasan: 'Dari satu titik di luar lingkaran, dapat dibuat tepat dua garis singgung dan kedua garis singgung tersebut memiliki panjang yang sama.',
+      kesulitan: 'mudah',
+    },
+    {
+      id: 5,
+      pertanyaan: 'Dari titik P(7,0) ke lingkaran x²+y²=25, panjang garis singgungnya adalah...',
+      pilihan: ['2√3', '2√6', '√74', '4√3'],
+      jawabanBenar: 1,
+      penjelasan: 'Panjang garis singgung = √(x₀²+y₀²-r²) = √(49+0-25) = √24 = 2√6.',
+      kesulitan: 'sulit',
+    },
+  ],
   'definisi-unsur': [
     {
       id: 1,
@@ -141,93 +225,90 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       kesulitan: 'sedang',
     },
   ],
-  'garis-singgung': [
-    {
-      id: 1,
-      pertanyaan: 'Garis singgung lingkaran adalah garis yang...',
-      pilihan: ['Memotong lingkaran di dua titik', 'Menyinggung lingkaran tepat di satu titik', 'Melalui pusat lingkaran', 'Sejajar dengan jari-jari'],
-      jawabanBenar: 1,
-      penjelasan: 'Garis singgung lingkaran adalah garis yang menyentuh lingkaran tepat di satu titik, yang disebut titik singgung.',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 2,
-      pertanyaan: 'Garis singgung lingkaran x² + y² = r² di titik (x₁, y₁) pada lingkaran memiliki persamaan...',
-      pilihan: ['xx₁ + yy₁ = r', 'xx₁ + yy₁ = r²', 'x/x₁ + y/y₁ = r²', 'x² + y² = r²'],
-      jawabanBenar: 1,
-      penjelasan: 'Persamaan garis singgung lingkaran x² + y² = r² di titik (x₁,y₁) adalah xx₁ + yy₁ = r².',
-      kesulitan: 'sedang',
-    },
-    {
-      id: 3,
-      pertanyaan: 'Persamaan garis singgung lingkaran x² + y² = 25 di titik (3, 4) adalah...',
-      pilihan: ['3x + 4y = 5', '3x + 4y = 25', '4x + 3y = 25', '3x - 4y = 25'],
-      jawabanBenar: 1,
-      penjelasan: 'Menggunakan rumus xx₁ + yy₁ = r²: x(3) + y(4) = 25 → 3x + 4y = 25.',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 4,
-      pertanyaan: 'Sifat yang berlaku pada garis singgung lingkaran di titik singgung adalah...',
-      pilihan: ['Sejajar dengan jari-jari', 'Tegak lurus dengan jari-jari', 'Membentuk sudut 45° dengan jari-jari', 'Sejajar dengan diameter'],
-      jawabanBenar: 1,
-      penjelasan: 'Sifat penting: garis singgung lingkaran selalu tegak lurus (membentuk sudut 90°) terhadap jari-jari di titik singgung.',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 5,
-      pertanyaan: 'Dari titik P(7,0) dibuat garis singgung ke lingkaran x² + y² = 25. Panjang garis singgung tersebut adalah...',
-      pilihan: ['2√6', '2√3', '√74', '√24'],
-      jawabanBenar: 0,
-      penjelasan: 'Panjang garis singgung dari titik P(x₀,y₀) ke lingkaran x²+y²=r² adalah √(x₀²+y₀²-r²) = √(49+0-25) = √24 = 2√6.',
-      kesulitan: 'sulit',
-    },
-  ],
-  'hubungan-lingkaran': [
-    {
-      id: 1,
-      pertanyaan: 'Dua lingkaran dikatakan bersinggungan luar jika jarak antara kedua pusatnya sama dengan...',
-      pilihan: ['r₁ - r₂', 'r₁ + r₂', '|r₁ - r₂|', 'r₁ × r₂'],
-      jawabanBenar: 1,
-      penjelasan: 'Dua lingkaran bersinggungan luar jika jarak antar pusat (d) = r₁ + r₂. Titik singgungnya berada di antara kedua pusat.',
-      kesulitan: 'mudah',
-    },
-    {
-      id: 2,
-      pertanyaan: 'Dua lingkaran dengan jari-jari r₁ = 5 dan r₂ = 3 berpusat di titik yang berjarak 8. Posisi kedua lingkaran tersebut adalah...',
-      pilihan: ['Berpotongan', 'Bersinggungan luar', 'Bersinggungan dalam', 'Saling lepas'],
-      jawabanBenar: 1,
-      penjelasan: 'r₁ + r₂ = 5+3 = 8 = jarak pusat. Karena d = r₁+r₂, kedua lingkaran bersinggungan luar.',
-      kesulitan: 'sedang',
-    },
-    {
-      id: 3,
-      pertanyaan: 'Garis singgung persekutuan luar dari dua lingkaran adalah garis yang...',
-      pilihan: ['Menyinggung kedua lingkaran dari sisi yang sama', 'Menyinggung kedua lingkaran dari sisi yang berlawanan', 'Melalui kedua pusat lingkaran', 'Tegak lurus garis pusat'],
-      jawabanBenar: 0,
-      penjelasan: 'Garis singgung persekutuan luar menyinggung kedua lingkaran dari sisi yang sama (tidak melewati daerah antara kedua pusat).',
-      kesulitan: 'sedang',
-    },
-    {
-      id: 4,
-      pertanyaan: 'Dua lingkaran dengan jari-jari r₁ = 8 dan r₂ = 3 berpusat pada jarak d = 13. Panjang garis singgung persekutuan luarnya adalah...',
-      pilihan: ['10', '12', '√119', '√144'],
-      jawabanBenar: 1,
-      penjelasan: 'Panjang GS persekutuan luar = √(d² - (r₁-r₂)²) = √(169 - 25) = √144 = 12.',
-      kesulitan: 'sulit',
-    },
-    {
-      id: 5,
-      pertanyaan: 'Dua lingkaran saling lepas terjadi jika jarak antar pusatnya memenuhi kondisi...',
-      pilihan: ['d < |r₁ - r₂|', 'd = r₁ + r₂', 'd > r₁ + r₂', 'd = |r₁ - r₂|'],
-      jawabanBenar: 2,
-      penjelasan: 'Dua lingkaran saling lepas (tidak berpotongan dan tidak bersinggungan) terjadi jika jarak antar pusat d > r₁ + r₂.',
-      kesulitan: 'mudah',
-    },
-  ],
 };
 
 export const kontenMateri: Record<string, { teori: string; rumus: Array<{label: string; formula: string}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
+  'lingkaran-busur': {
+    teori: `Bagian dari lingkaran disebut busur lingkaran. Busur yang lebih kecil disebut busur minor dan bagian yang lebih besar disebut busur mayor. Jika hanya disebutkan kata busur, maka yang dimaksud adalah busur minor.
+
+Sudut Pusat adalah sudut yang titik sudutnya terletak pada pusat lingkaran dan kaki-kaki sudutnya adalah jari-jari lingkaran.
+Rumus besar sudut pusat: α = 2θ, artinya besar sudut pusat = 2 × besar sudut keliling yang menghadap busur yang sama.
+
+Sudut Keliling adalah sudut yang titik sudutnya terletak pada lingkaran dan kaki-kaki sudutnya berupa tali busur. Tali busur adalah ruas garis yang menghubungkan dua titik pada lingkaran.
+Rumus sudut keliling: θ = ½α, artinya besar sudut keliling = ½ × besar sudut pusat yang menghadap busur yang sama.
+
+Kesimpulan penting:
+• Semua sudut keliling yang menghadap busur yang sama memiliki besar yang sama
+• Sudut keliling yang menghadap diameter selalu bernilai 90°`,
+    rumus: [
+      { label: 'Sudut Pusat (α) terhadap Sudut Keliling (θ)', formula: 'α = 2θ' },
+      { label: 'Sudut Keliling (θ) terhadap Sudut Pusat (α)', formula: 'θ = ½α' },
+      { label: 'Panjang Busur', formula: 'l = (α / 360°) × 2πr' },
+      { label: 'Luas Juring', formula: 'L = (α / 360°) × πr²' },
+    ],
+    contoh: [
+      {
+        soal: 'Diketahui sudut pusat ∠BOC = 70° pada lingkaran berpusat O dengan jari-jari 21 cm. Hitunglah panjang busur BC dan luas juring BOC! (π = 22/7)',
+        solusi: [
+          'Diketahui: α = 70°, r = 21 cm, π = 22/7',
+          'Panjang busur BC = (α/360°) × 2πr = (70/360) × 2 × (22/7) × 21',
+          '= (7/36) × 2 × 22 × 3 = (7/36) × 132 = 924/36 = 25,67 cm',
+          'Luas juring BOC = (α/360°) × πr² = (70/360) × (22/7) × 21²',
+          '= (7/36) × (22/7) × 441 = (22/36) × 441 = 9702/36 = 269,5 cm²',
+        ],
+      },
+      {
+        soal: 'Sudut pusat ∠AOB = 80°. Titik C terletak pada busur besar lingkaran. Tentukan besar sudut keliling ∠ACB!',
+        solusi: [
+          'Sudut keliling yang menghadap busur yang sama dengan sudut pusat',
+          '∠ACB = ½ × ∠AOB',
+          '∠ACB = ½ × 80° = 40°',
+          'Jadi besar sudut keliling ∠ACB adalah 40°',
+        ],
+      },
+    ],
+  },
+  'lingkaran-garis-singgung': {
+    teori: `Garis singgung lingkaran adalah garis yang memiliki tepat satu titik persekutuan dengan lingkaran yang disebut titik singgung.
+
+Sifat-sifat garis singgung:
+• Garis singgung tegak lurus terhadap jari-jari lingkaran di titik singgung
+• Dari satu titik di luar lingkaran dapat dibuat dua garis singgung yang memiliki panjang sama
+
+Contoh dalam kehidupan nyata: Roda kereta api yang menyentuh rel di satu titik. Secara matematis, rel berperan sebagai garis singgung roda dan titik sentuhnya disebut titik singgung.
+
+Penurunan persamaan garis singgung:
+Misalkan titik P(x₁, y₁) pada lingkaran x²+y²=r². Gradien garis OP adalah mOP = y₁/x₁. Karena garis singgung tegak lurus OP maka m = -x₁/y₁. Dengan substitusi ke persamaan garis, diperoleh persamaan garis singgung: x₁x + y₁y = r²`,
+    rumus: [
+      { label: 'Garis singgung di titik (x₁,y₁) pada x²+y²=r²', formula: 'x₁x + y₁y = r²' },
+      { label: 'Garis singgung di titik (x₁,y₁) pada (x-a)²+(y-b)²=r²', formula: '(x₁-a)(x-a) + (y₁-b)(y-b) = r²' },
+      { label: 'Garis singgung di titik (x₁,y₁) pada x²+y²+Ax+By+C=0', formula: 'x₁x + y₁y + ½A(x₁+x) + ½B(y₁+y) + C = 0' },
+      { label: 'Panjang garis singgung dari titik (x₀,y₀) ke x²+y²=r²', formula: 'L = √(x₀²+y₀²-r²)' },
+    ],
+    contoh: [
+      {
+        soal: 'Tentukan persamaan garis singgung lingkaran x²+y²=25 di titik P(3,4)!',
+        solusi: [
+          'Diketahui: lingkaran x²+y²=25, titik singgung P(3,4)',
+          'Gunakan rumus: x₁x + y₁y = r²',
+          'Substitusi x₁=3, y₁=4, r²=25:',
+          '3x + 4y = 25',
+          'Jadi persamaan garis singgungnya adalah 3x + 4y = 25',
+        ],
+      },
+      {
+        soal: 'Tentukan persamaan garis singgung lingkaran (x-2)²+(y+1)²=9 di titik Q(5,-1)!',
+        solusi: [
+          'Pusat (a,b) = (2,-1), r²=9, titik singgung Q(5,-1)',
+          'Gunakan rumus: (x₁-a)(x-a) + (y₁-b)(y-b) = r²',
+          '(5-2)(x-2) + (-1-(-1))(y-(-1)) = 9',
+          '3(x-2) + 0(y+1) = 9',
+          '3x - 6 = 9  →  3x = 15  →  x = 5',
+          'Jadi persamaan garis singgungnya adalah x = 5',
+        ],
+      },
+    ],
+  },
   'definisi-unsur': {
     teori: `Lingkaran adalah himpunan semua titik pada bidang datar yang berjarak sama dari suatu titik tertentu. Titik tertentu itu disebut pusat lingkaran dan jarak tersebut disebut jari-jari.
 
@@ -285,64 +366,6 @@ Lingkaran berpusat di titik asal O(0,0) memiliki persamaan: x² + y² = r²`,
           'Substitusi ke persamaan baku: (x-a)² + (y-b)² = r²',
           '(x-2)² + (y-3)² = 4²',
           '(x-2)² + (y-3)² = 16',
-        ],
-      },
-    ],
-  },
-  'garis-singgung': {
-    teori: `Garis singgung lingkaran adalah garis yang menyentuh lingkaran tepat di satu titik, yang disebut titik singgung.
-
-Sifat-sifat garis singgung:
-• Garis singgung tegak lurus terhadap jari-jari di titik singgung
-• Dari satu titik di luar lingkaran dapat dibuat tepat dua garis singgung
-• Dua garis singgung dari titik yang sama memiliki panjang yang sama
-
-Persamaan garis singgung:
-1. Di titik (x₁,y₁) pada lingkaran x²+y²=r²: xx₁ + yy₁ = r²
-2. Di titik (x₁,y₁) pada lingkaran (x-a)²+(y-b)²=r²:
-   (x-a)(x₁-a) + (y-b)(y₁-b) = r²`,
-    rumus: [
-      { label: 'Garis singgung di titik pada x²+y²=r²', formula: 'xx₁ + yy₁ = r²' },
-      { label: 'Garis singgung di titik pada (x-a)²+(y-b)²=r²', formula: '(x-a)(x₁-a) + (y-b)(y₁-b) = r²' },
-      { label: 'Panjang garis singgung dari titik luar', formula: 'L = √(x₀²+y₀²-r²)' },
-    ],
-    contoh: [
-      {
-        soal: 'Tentukan persamaan garis singgung lingkaran x²+y²=13 di titik (2,3)!',
-        solusi: [
-          'Gunakan rumus: xx₁ + yy₁ = r²',
-          'x(2) + y(3) = 13',
-          '2x + 3y = 13',
-          'Jadi, persamaan garis singgungnya adalah 2x + 3y = 13',
-        ],
-      },
-    ],
-  },
-  'hubungan-lingkaran': {
-    teori: `Dua lingkaran dapat memiliki berbagai posisi relatif berdasarkan jarak antar pusat (d) dan jari-jarinya (r₁ dan r₂).
-
-Posisi Relatif Dua Lingkaran:
-• Saling lepas (d > r₁+r₂): tidak ada titik potong
-• Bersinggungan luar (d = r₁+r₂): satu titik singgung di luar
-• Berpotongan (|r₁-r₂| < d < r₁+r₂): dua titik potong
-• Bersinggungan dalam (d = |r₁-r₂|): satu titik singgung di dalam
-• Sepusat/konsentris (d < |r₁-r₂|): salah satu di dalam yang lain
-
-Garis Singgung Persekutuan:
-• Persekutuan Luar: Menyinggung kedua lingkaran dari sisi yang sama
-• Persekutuan Dalam: Menyinggung kedua lingkaran dari sisi berlawanan`,
-    rumus: [
-      { label: 'Panjang GS Persekutuan Luar', formula: 'L_L = √(d² - (r₁-r₂)²)' },
-      { label: 'Panjang GS Persekutuan Dalam', formula: 'L_D = √(d² - (r₁+r₂)²)' },
-    ],
-    contoh: [
-      {
-        soal: 'Dua lingkaran berpusat di A(0,0) dengan r₁=5 dan B(13,0) dengan r₂=3. Tentukan panjang garis singgung persekutuan luarnya!',
-        solusi: [
-          'd = jarak AB = 13',
-          'r₁ - r₂ = 5 - 3 = 2',
-          'L_L = √(d² - (r₁-r₂)²) = √(13² - 2²)',
-          'L_L = √(169 - 4) = √165',
         ],
       },
     ],
