@@ -49,8 +49,28 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Copy index.html untuk SPA routing
-        run: cp build/client/index.html build/client/404.html
+      - name: Buat 404.html dengan SPA redirect
+        run: |
+          cat > build/client/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Redirecting...</title>
+              <script>
+                var l = window.location;
+                l.replace(
+                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                  '/elkpd-lingkaran/' +
+                  '?p=/' + l.pathname.slice(1).replace(/\/$/,'') +
+                  (l.search ? '&q=' + l.search.slice(1) : '') +
+                  l.hash
+                );
+              </script>
+            </head>
+            <body>Redirecting...</body>
+          </html>
+          EOF
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

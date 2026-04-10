@@ -1,4 +1,5 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useNavigate } from "react-router";
+import { useEffect } from "react";
 import type { Route } from "./+types/root";
 import colorSchemeApi from "@dazl/color-scheme/client?url";
 import { ErrorBoundary as ErrorBoundaryRoot } from "~/components/error-boundary/error-boundary";
@@ -63,8 +64,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function SpaRedirectHandler() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirectPath = params.get("p");
+    if (redirectPath) {
+      const query = params.get("q");
+      navigate(redirectPath + (query ? `?${query}` : ""), { replace: true });
+    }
+  }, [navigate]);
+  return null;
+}
+
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <SpaRedirectHandler />
+      <Outlet />
+    </>
+  );
 }
 
 export const ErrorBoundary = ErrorBoundaryRoot;
