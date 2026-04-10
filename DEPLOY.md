@@ -1,0 +1,94 @@
+# Panduan Deploy ke GitHub Pages
+
+## Persiapan Sekali (One-time Setup)
+
+### 1. Buat Repository di GitHub
+- Buat repo baru di GitHub (contoh: `e-lkpd-lingkaran`)
+- Push semua file project ini ke branch `main`
+
+### 2. Aktifkan GitHub Pages
+- Buka repo di GitHub → **Settings** → **Pages**
+- Source: pilih **GitHub Actions**
+
+### 3. Buat GitHub Actions Workflow
+Buat file `.github/workflows/deploy.yml` di repository GitHub dengan isi:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Copy index.html untuk SPA routing
+        run: cp build/client/index.html build/client/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/client
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+### 4. Jika Repository Punya Sub-path
+Jika URL GitHub Pages kamu bukan `https://username.github.io/` melainkan
+`https://username.github.io/nama-repo/`, tambahkan `base` di `vite.config.ts`:
+
+```ts
+export default defineConfig({
+  base: "/nama-repo/",   // ganti dengan nama repo
+  plugins: [reactRouter(), tsconfigPaths()],
+});
+```
+
+## Cara Deploy
+Setelah setup selesai, cukup:
+```bash
+git add .
+git commit -m "update"
+git push origin main
+```
+GitHub Actions akan otomatis build dan deploy. Lihat progresnya di tab **Actions** di GitHub.
+
+## Catatan
+- File `build/client/404.html` (salinan dari `index.html`) diperlukan agar semua route seperti `/login`, `/materi/:id`, dll. tetap bisa diakses langsung tanpa 404.
+- Project sudah dikonfigurasi dalam **SPA mode** sehingga output build berupa static files murni.
