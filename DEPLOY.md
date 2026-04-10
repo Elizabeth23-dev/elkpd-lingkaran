@@ -69,16 +69,8 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-### 4. Jika Repository Punya Sub-path
-Jika URL GitHub Pages kamu bukan `https://username.github.io/` melainkan
-`https://username.github.io/nama-repo/`, tambahkan `base` di `vite.config.ts`:
-
-```ts
-export default defineConfig({
-  base: "/nama-repo/",   // ganti dengan nama repo
-  plugins: [reactRouter(), tsconfigPaths()],
-});
-```
+### 4. Base Path
+`vite.config.ts` sudah dikonfigurasi dengan `base: "/elkpd-lingkaran/"` sesuai URL GitHub Pages `https://elizabeth23-dev.github.io/elkpd-lingkaran/`.
 
 ## Cara Deploy
 Setelah setup selesai, cukup:
