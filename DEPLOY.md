@@ -1,16 +1,51 @@
-# Panduan Deploy ke GitHub Pages
+# Panduan Deploy ke GitHub Pages (Custom Domain)
 
-## Persiapan Sekali (One-time Setup)
+## ⚠️ Catatan Penting
+Project ini sudah dikonfigurasi untuk custom domain (bukan GitHub Pages sub-path).
+- `vite.config.ts` menggunakan `base: "/"` (root domain)
+- File `public/CNAME` berisi nama domain Anda
 
-### 1. Buat Repository di GitHub
-- Buat repo baru di GitHub (contoh: `e-lkpd-lingkaran`)
-- Push semua file project ini ke branch `main`
+## Langkah Setup
 
-### 2. Aktifkan GitHub Pages
+### 1. Beli Domain
+Beli domain di Niagahoster, Domainesia, atau GoDaddy.
+Contoh: `elkpd-lingkaran.com`
+
+### 2. Setting DNS di Panel Domain
+**Jika pakai domain utama (`www.domainanda.com`):**
+```
+Type: CNAME
+Name: www
+Value: elizabeth23-dev.github.io
+```
+
+**Jika pakai subdomain (`elkpd.domainanda.com`):**
+```
+Type: CNAME
+Name: elkpd
+Value: elizabeth23-dev.github.io
+```
+
+Tunggu propagasi DNS: biasanya 10–30 menit, maksimal 24 jam.
+
+### 3. Update file CNAME
+Ganti isi file `public/CNAME` dengan domain Anda yang sebenarnya.
+Contoh:
+```
+www.domainanda.com
+```
+Atau:
+```
+elkpd.domainanda.com
+```
+
+### 4. Aktifkan GitHub Pages
 - Buka repo di GitHub → **Settings** → **Pages**
 - Source: pilih **GitHub Actions**
+- Di bagian "Custom domain": ketik domain Anda → Save
+- Centang **Enforce HTTPS** (setelah domain sudah tersambung)
 
-### 3. Buat GitHub Actions Workflow
+### 5. Buat GitHub Actions Workflow
 Buat file `.github/workflows/deploy.yml` di repository GitHub dengan isi:
 
 ```yaml
@@ -49,28 +84,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Buat 404.html dengan SPA redirect
-        run: |
-          cat > build/client/404.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>Redirecting...</title>
-              <script>
-                var l = window.location;
-                l.replace(
-                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                  '/elkpd-lingkaran/' +
-                  '?p=/' + l.pathname.slice(1).replace(/\/$/,'') +
-                  (l.search ? '&q=' + l.search.slice(1) : '') +
-                  l.hash
-                );
-              </script>
-            </head>
-            <body>Redirecting...</body>
-          </html>
-          EOF
+      - name: Buat 404.html untuk SPA routing
+        run: cp build/client/index.html build/client/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -89,18 +104,28 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-### 4. Base Path
-`vite.config.ts` sudah dikonfigurasi dengan `base: "/elkpd-lingkaran/"` sesuai URL GitHub Pages `https://elizabeth23-dev.github.io/elkpd-lingkaran/`.
+### 6. Push Project ke GitHub
+Setelah extract ZIP dari Dazl, buka terminal di folder project:
+```bash
+git init
+git remote add origin https://github.com/Elizabeth23-dev/elkpd-lingkaran.git
+git add .
+git commit -m "deploy: ELKPD Lingkaran dengan custom domain"
+git push origin main --force
+```
 
-## Cara Deploy
-Setelah setup selesai, cukup:
+GitHub Actions akan otomatis build dan deploy (~2-3 menit).
+Cek tab **Actions** di GitHub untuk melihat progress.
+
+## Cara Update (Setelah Setup Selesai)
+Cukup push ke GitHub:
 ```bash
 git add .
 git commit -m "update"
 git push origin main
 ```
-GitHub Actions akan otomatis build dan deploy. Lihat progresnya di tab **Actions** di GitHub.
 
 ## Catatan
-- File `build/client/404.html` (salinan dari `index.html`) diperlukan agar semua route seperti `/login`, `/materi/:id`, dll. tetap bisa diakses langsung tanpa 404.
-- Project sudah dikonfigurasi dalam **SPA mode** sehingga output build berupa static files murni.
+- File `public/CNAME` wajib ada agar GitHub Pages mengarahkan domain ke repo ini
+- `404.html` diperlukan agar semua route (login, materi, admin) bisa diakses langsung tanpa error 404
+- Project sudah dalam **SPA mode** — output build berupa static files murni
