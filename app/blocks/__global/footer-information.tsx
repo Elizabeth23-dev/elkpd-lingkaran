@@ -46,11 +46,11 @@ export function FooterInformation({ className }: FooterInformationProps) {
           <h4 className={styles.colTitle}>Hubungi Guru</h4>
           <a href="mailto:guru@sekolah.id" className={styles.contactItem}>
             <Mail size={16} />
-            <span>guru@sekolah.id</span>
+            <span>2220306102@sekolah.id</span>
           </a>
           <a href="tel:+628123456789" className={styles.contactItem}>
             <Phone size={16} />
-            <span>+62 812-3456-789</span>
+            <span>+6289516820013</span>
           </a>
           <a href="#" className={styles.contactItem}>
             <MessageCircle size={16} />
@@ -61,9 +61,7 @@ export function FooterInformation({ className }: FooterInformationProps) {
       </div>
 
       <div className={styles.bottom}>
-        <p className={styles.bottomText}>
-          &copy; 2024/2025 E-LKPD Lingkaran &mdash; Kelas XI SMA &mdash; Matematika Wajib
-        </p>
+        <p className={styles.bottomText}>© 2025/2026 E-LKPD Lingkaran — Kelas XI SMA — Matematika Wajib</p>
       </div>
     </footer>
   );
