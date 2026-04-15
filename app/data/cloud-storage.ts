@@ -1,20 +1,12 @@
 /**
  * Cloud storage service menggunakan JSONBin.io v3.
  * Data siswa disimpan di cloud sehingga bisa diakses dari device manapun.
- *
- * Setup:
- * 1. Daftar gratis di https://jsonbin.io
- * 2. Buat bin baru dengan JSON awal: {"users": []}
- * 3. Salin BIN_ID dan API_KEY ke konstanta di bawah
  */
 
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
 
-// Ganti dengan API key dan Bin ID dari jsonbin.io Anda
-const API_KEY = (typeof window !== 'undefined' ? (window as any).__ELKPD_JSONBIN_KEY__ : '') ||
-  import.meta.env.VITE_JSONBIN_API_KEY || '';
-const BIN_ID = (typeof window !== 'undefined' ? (window as any).__ELKPD_JSONBIN_BIN__ : '') ||
-  import.meta.env.VITE_JSONBIN_BIN_ID || '';
+const API_KEY = import.meta.env.VITE_JSONBIN_API_KEY as string | undefined ?? '';
+const BIN_ID = import.meta.env.VITE_JSONBIN_BIN_ID as string | undefined ?? '';
 
 const LOCAL_FALLBACK_KEY = 'elkpd-registered-users';
 const CACHE_KEY = 'elkpd-cloud-cache';
@@ -39,7 +31,11 @@ interface CacheEntry {
 }
 
 function isConfigured(): boolean {
-  return Boolean(API_KEY && BIN_ID);
+  const ok = Boolean(API_KEY && BIN_ID);
+  if (!ok) {
+    console.warn('[cloud-storage] JSONBin tidak dikonfigurasi. API_KEY:', !!API_KEY, 'BIN_ID:', !!BIN_ID);
+  }
+  return ok;
 }
 
 function getCache(): CloudUser[] | null {
@@ -75,13 +71,7 @@ export function invalidateCloudCache(): void {
 /** Ambil daftar user dari cloud. Fallback ke localStorage jika tidak terkonfigurasi. */
 export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]> {
   if (!isConfigured()) {
-    // Fallback: baca dari localStorage (antar-tab di device yang sama)
-    try {
-      const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);
-      return raw ? (JSON.parse(raw) as CloudUser[]) : [];
-    } catch {
-      return [];
-    }
+    return getLocalFallback();
   }
 
   // Pakai cache kecuali diminta bypass
@@ -101,17 +91,21 @@ export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]>
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = (await res.json()) as CloudData;
     const users = Array.isArray(data.users) ? data.users : [];
+    console.info(`[cloud-storage] Berhasil fetch ${users.length} users dari JSONBin`);
     setCache(users);
     return users;
   } catch (err) {
     console.warn('[cloud-storage] Gagal fetch dari cloud, pakai cache/localStorage:', err);
-    // Fallback ke localStorage
-    try {
-      const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);
-      return raw ? (JSON.parse(raw) as CloudUser[]) : [];
-    } catch {
-      return [];
-    }
+    return getLocalFallback();
+  }
+}
+
+function getLocalFallback(): CloudUser[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);
+    return raw ? (JSON.parse(raw) as CloudUser[]) : [];
+  } catch {
+    return [];
   }
 }
 
@@ -120,14 +114,13 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
   // Selalu simpan ke localStorage sebagai backup
   try {
     localStorage.setItem(LOCAL_FALLBACK_KEY, JSON.stringify(users));
-    // Dispatch event agar tab lain di device yang sama ikut update
     window.dispatchEvent(new StorageEvent('storage', { key: LOCAL_FALLBACK_KEY }));
   } catch { /* ignore */ }
 
   if (!isConfigured()) return;
 
   try {
-    await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
+    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -135,6 +128,8 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
       },
       body: JSON.stringify({ users }),
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    console.info(`[cloud-storage] Berhasil simpan ${users.length} users ke JSONBin`);
     invalidateCache();
     setCache(users);
   } catch (err) {

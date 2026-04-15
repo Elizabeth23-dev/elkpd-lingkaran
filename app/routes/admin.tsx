@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
 import { getDaftarAkunAsync } from '~/data/auth';
+import { invalidateCloudCache } from '~/data/cloud-storage';
 import type { User } from '~/data/auth';
 import { daftarMateri } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
@@ -48,13 +49,21 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Refresh list saat halaman dimuat (bypass cache), auto-refresh setiap 30 detik, dan saat localStorage berubah
+  // Saat halaman admin dimuat: invalidate cache dulu, lalu fetch fresh dari JSONBin
+  // Auto-refresh setiap 15 detik agar data siswa selalu terbaru
   useEffect(() => {
+    invalidateCloudCache();
     void refreshSiswaList(true);
 
-    const interval = setInterval(() => void refreshSiswaList(true), 30_000);
+    const interval = setInterval(() => {
+      invalidateCloudCache();
+      void refreshSiswaList(true);
+    }, 15_000);
 
-    const onStorage = () => void refreshSiswaList(true);
+    const onStorage = () => {
+      invalidateCloudCache();
+      void refreshSiswaList(true);
+    };
     window.addEventListener('storage', onStorage);
 
     return () => {

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { User, UserRole, RegisterPayload, RegisterResult } from '~/data/auth';
-import { authenticate, registerSiswa } from '~/data/auth';
+import { authenticate, registerSiswa, getDaftarAkunAsync } from '~/data/auth';
 import { invalidateCloudCache } from '~/data/cloud-storage';
 
 const AUTH_KEY = 'elkpd-auth';
@@ -37,7 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (username: string, password: string, role: UserRole): Promise<boolean> => {
     // Invalidate cache sebelum login agar data siswa terbaru selalu di-fetch dari cloud
     invalidateCloudCache();
-    const found = await authenticate(username, password, role);
+    // Jika login sebagai guru, fetch fresh dengan bypass cache
+    const bypassCache = role === 'guru';
+    const found = bypassCache
+      ? (await getDaftarAkunAsync(true)).find(
+          (u) => u.username === username && u.password === password && u.role === role
+        ) ?? null
+      : await authenticate(username, password, role);
     if (found) {
       setUser(found);
       saveSession(found);

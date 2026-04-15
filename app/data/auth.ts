@@ -87,7 +87,8 @@ export type RegisterResult =
 
 /** Daftarkan akun siswa baru ke cloud. */
 export async function registerSiswa(payload: RegisterPayload): Promise<RegisterResult> {
-  const cloudUsers = await fetchCloudUsers();
+  // Selalu bypass cache saat register agar cek username duplikat pakai data terbaru
+  const cloudUsers = await fetchCloudUsers(true);
   const allDefault = defaultAkun;
 
   const existsInDefault = allDefault.some(
