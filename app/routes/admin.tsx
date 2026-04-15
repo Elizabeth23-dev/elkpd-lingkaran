@@ -1,11 +1,11 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
   Users, BookOpen, BarChart2, Award, Clock, CheckCircle,
   XCircle, LogOut, ChevronRight, Layers, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
-import { daftarAkun } from '~/data/auth';
+import { getDaftarAkun } from '~/data/auth';
 import { daftarMateri } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
 import styles from './admin.module.css';
@@ -13,8 +13,6 @@ import styles from './admin.module.css';
 export function meta() {
   return [{ title: 'Admin Guru — E-LKPD Lingkaran Kelas 11 SMA' }];
 }
-
-const siswaList = daftarAkun.filter((u) => u.role === 'siswa');
 
 function formatTime(secs: number): string {
   const m = Math.floor(secs / 60);
@@ -34,6 +32,12 @@ function gradeLabel(score: number, total: number): { label: string; className: s
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [siswaList, setSiswaList] = useState(() => getDaftarAkun().filter((u) => u.role === 'siswa'));
+
+  // Refresh list setiap kali halaman dimuat ulang
+  useEffect(() => {
+    setSiswaList(getDaftarAkun().filter((u) => u.role === 'siswa'));
+  }, []);
 
   const handleResetNilai = useCallback((siswaId: string) => {
     daftarMateri.forEach((m) => sessionStorage.removeItem(hasilKey(siswaId, m.id)));
@@ -63,7 +67,7 @@ export default function AdminPage() {
     navigate('/login');
   };
 
-  const totalSiswa = siswaList.length;
+  const totalSiswa = siswaList.length; // dibaca dari state
   const totalMateri = daftarMateri.length;
 
   // Aggregate stats — baca langsung dari sessionStorage

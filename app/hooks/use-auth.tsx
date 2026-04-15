@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import type { User, UserRole } from '~/data/auth';
-import { authenticate } from '~/data/auth';
+import type { User, UserRole, RegisterPayload, RegisterResult } from '~/data/auth';
+import { authenticate, registerSiswa } from '~/data/auth';
 
 const AUTH_KEY = 'elkpd-auth';
 
@@ -25,6 +25,7 @@ interface AuthContextValue {
   user: User | null;
   login: (username: string, password: string, role: UserRole) => boolean;
   logout: () => void;
+  register: (payload: RegisterPayload) => RegisterResult;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,8 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveSession(null);
   }, []);
 
+  const register = useCallback((payload: RegisterPayload): RegisterResult => {
+    return registerSiswa(payload);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
