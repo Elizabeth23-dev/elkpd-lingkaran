@@ -42,9 +42,11 @@ export function getRegisteredUsers(): User[] {
   }
 }
 
-/** Simpan akun baru ke sessionStorage */
+/** Simpan akun baru ke sessionStorage dan dispatch event agar admin page ikut refresh */
 function saveRegisteredUsers(users: User[]): void {
   sessionStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(users));
+  // Dispatch storage event manual agar listener di tab yang sama juga terpicu
+  window.dispatchEvent(new StorageEvent('storage', { key: REGISTERED_USERS_KEY }));
 }
 
 /** Seluruh akun (default + yang didaftarkan) */

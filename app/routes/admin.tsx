@@ -34,10 +34,16 @@ export default function AdminPage() {
   const navigate = useNavigate();
   const [siswaList, setSiswaList] = useState(() => getDaftarAkun().filter((u) => u.role === 'siswa'));
 
-  // Refresh list setiap kali halaman dimuat ulang
-  useEffect(() => {
+  const refreshSiswaList = useCallback(() => {
     setSiswaList(getDaftarAkun().filter((u) => u.role === 'siswa'));
   }, []);
+
+  // Refresh list saat halaman dimuat & saat sessionStorage berubah (siswa baru mendaftar)
+  useEffect(() => {
+    refreshSiswaList();
+    window.addEventListener('storage', refreshSiswaList);
+    return () => window.removeEventListener('storage', refreshSiswaList);
+  }, [refreshSiswaList]);
 
   const handleResetNilai = useCallback((siswaId: string) => {
     daftarMateri.forEach((m) => sessionStorage.removeItem(hasilKey(siswaId, m.id)));
@@ -155,6 +161,9 @@ export default function AdminPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Users size={20} /> Rekap Nilai Siswa
+            <button className={styles.refreshBtn} onClick={refreshSiswaList} title="Muat ulang daftar siswa">
+              <RotateCcw size={14} /> Refresh
+            </button>
           </h2>
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
