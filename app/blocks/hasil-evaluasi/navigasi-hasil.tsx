@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { RotateCcw, BookOpen, Home, ArrowRight } from "lucide-react";
+import { BookOpen, Home } from "lucide-react";
 import classnames from "classnames";
 import styles from "./navigasi-hasil.module.css";
 
@@ -23,10 +23,6 @@ export function NavigasiHasil({ className, topicId }: NavigasiHasilProps) {
             <span>Kembali ke Materi</span>
           </Link>
 
-          <Link to={`/latihan/${topicId}`} className={styles.btnPrimary}>
-            <RotateCcw size={18} />
-            <span>Coba Lagi</span>
-          </Link>
         </div>
       </div>
     </div>
