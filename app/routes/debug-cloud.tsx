@@ -1,323 +1,183 @@
 /**
- * Halaman setup & sinkronisasi JSONBin.
- * Akses di /debug-cloud — bisa juga dari tombol "Setup Cloud" di halaman Admin.
+ * Halaman Sinkronisasi Data Siswa.
+ * Guru bisa Export data dari HP → Import di PC (atau sebaliknya).
+ * Tidak perlu API key atau layanan cloud eksternal.
  */
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import {
-  getActiveApiKey,
-  getActiveBinId,
-  setManualCredentials,
-  clearManualCredentials,
-  fetchCloudUsers,
-  saveCloudUsers,
-  type CloudUser,
-} from '~/data/cloud-storage';
+import type { CloudUser } from '~/data/cloud-storage';
 import styles from './debug-cloud.module.css';
 
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
-
-interface TestResult {
-  step: string;
-  ok: boolean;
-  message: string;
-  data?: unknown;
-}
+const LOCAL_KEY = 'elkpd-registered-users';
 
 export function meta() {
-  return [{ title: 'Setup Sinkronisasi Cloud — E-LKPD' }];
+  return [{ title: 'Sinkronisasi Data Siswa — E-LKPD' }];
 }
 
-export default function DebugCloudPage() {
-  const [results, setResults] = useState<TestResult[]>([]);
-  const [running, setRunning] = useState(false);
-  const [inputKey, setInputKey] = useState('');
-  const [inputBin, setInputBin] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [currentKey, setCurrentKey] = useState('');
-  const [currentBin, setCurrentBin] = useState('');
-  const [localCount, setLocalCount] = useState(0);
+function readLocalUsers(): CloudUser[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    return raw ? (JSON.parse(raw) as CloudUser[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export default function SinkronisasiPage() {
+  const [localUsers, setLocalUsers] = useState<CloudUser[]>([]);
+  const [importResult, setImportResult] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
-    setCurrentKey(getActiveApiKey());
-    setCurrentBin(getActiveBinId());
-    // Hitung data di localStorage
-    try {
-      const raw = localStorage.getItem('elkpd-registered-users');
-      const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
-      setLocalCount(users.length);
-    } catch { /* ignore */ }
+    setLocalUsers(readLocalUsers());
   }, []);
 
-  function handleSaveCredentials() {
-    const key = inputKey.trim();
-    const bin = inputBin.trim();
-    if (!key || !bin) {
-      alert('API Key dan BIN ID harus diisi!');
-      return;
-    }
-    if (!key.startsWith('$2a$10$')) {
-      alert('Format API Key tidak valid. Harus diawali $2a$10$');
-      return;
-    }
-    setManualCredentials(key, bin);
-    setCurrentKey(getActiveApiKey());
-    setCurrentBin(getActiveBinId());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-    setResults([]);
-  }
-
-  function handleClearCredentials() {
-    if (!confirm('Hapus konfigurasi API Key & BIN ID dari browser ini?')) return;
-    clearManualCredentials();
-    setCurrentKey(getActiveApiKey());
-    setCurrentBin(getActiveBinId());
-    setInputKey('');
-    setInputBin('');
-    setResults([]);
-  }
-
-  async function runTests() {
-    const key = getActiveApiKey();
-    const bin = getActiveBinId();
-    const log: TestResult[] = [];
-    setResults([]);
-    setRunning(true);
-
-    // Step 1: Konfigurasi
-    log.push({
-      step: 'Langkah 1 — Konfigurasi',
-      ok: Boolean(key && bin),
-      message: key && bin
-        ? `API Key: ${key.slice(0, 15)}... | BIN ID: ${bin}`
-        : 'KOSONG — Masukkan API Key & BIN ID di form di bawah lalu klik Simpan',
-    });
-    setResults([...log]);
-    if (!key || !bin) { setRunning(false); return; }
-
-    // Step 2: Test koneksi JSONBin
-    try {
-      const res = await fetch(`${JSONBIN_BASE}/b/${bin}/latest`, {
-        headers: { 'X-Master-Key': key, 'X-Bin-Meta': 'false', 'Cache-Control': 'no-cache' },
-      });
-      const text = await res.text();
-      let parsed: unknown = null;
-      try { parsed = JSON.parse(text); } catch { /* ignore */ }
-      log.push({
-        step: 'Langkah 2 — Koneksi ke JSONBin',
-        ok: res.ok,
-        message: res.ok
-          ? `Berhasil terhubung ke JSONBin (HTTP ${res.status})`
-          : `GAGAL: HTTP ${res.status} — ${text.slice(0, 200)}`,
-        data: parsed,
-      });
-    } catch (err) {
-      log.push({ step: 'Langkah 2 — Koneksi ke JSONBin', ok: false, message: `Network error: ${String(err)}` });
-    }
-    setResults([...log]);
-
-    // Step 3: Data siswa di cloud
-    try {
-      const users = await fetchCloudUsers(true);
-      log.push({
-        step: 'Langkah 3 — Data Siswa di Cloud',
-        ok: true,
-        message: users.length > 0
-          ? `${users.length} siswa tersimpan di JSONBin`
-          : 'Cloud kosong (belum ada siswa — lakukan Migrate dari HP yang menyimpan data)',
-        data: users.map((u) => ({ nama: u.name, username: u.username, kelas: u.kelas })),
-      });
-    } catch (err) {
-      log.push({ step: 'Langkah 3 — Data Siswa di Cloud', ok: false, message: `Error: ${String(err)}` });
-    }
-    setResults([...log]);
-    setRunning(false);
-  }
-
-  async function handleMigrate() {
-    const key = getActiveApiKey();
-    const bin = getActiveBinId();
-    if (!key || !bin) {
-      alert('Simpan konfigurasi API Key & BIN ID terlebih dahulu, lalu jalankan Test untuk memastikan koneksi berhasil.');
-      return;
-    }
-
-    const raw = localStorage.getItem('elkpd-registered-users');
-    const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
+  // ---- Export ----
+  function handleExport() {
+    const users = readLocalUsers();
     if (users.length === 0) {
-      alert('Tidak ada data siswa di browser/HP ini. Coba buka halaman ini di HP yang digunakan siswa untuk daftar.');
+      alert('Tidak ada data siswa di browser/HP ini untuk di-export.');
       return;
     }
-
-    if (!confirm(`Upload ${users.length} siswa dari browser ini ke JSONBin agar bisa diakses semua device?`)) return;
-
-    try {
-      const cloudUsers = await fetchCloudUsers(true);
-      const merged = [...cloudUsers];
-      for (const u of users) {
-        if (!merged.some((c) => c.username === u.username)) {
-          merged.push(u);
-        }
-      }
-      await saveCloudUsers(merged);
-      alert(`Berhasil! Total ${merged.length} siswa tersimpan di JSONBin. Sekarang buka halaman Admin untuk melihat daftar siswa.`);
-      void runTests();
-    } catch (err) {
-      alert(`Gagal upload: ${String(err)}`);
-    }
+    const blob = new Blob([JSON.stringify({ users }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `elkpd-siswa-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
-  const isReady = Boolean(currentKey && currentBin);
+  // ---- Import ----
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setImportResult(null);
+    setImportError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string) as { users: CloudUser[] };
+        if (!Array.isArray(parsed.users)) throw new Error('Format file tidak valid.');
+
+        const existing = readLocalUsers();
+        const merged = [...existing];
+        let added = 0;
+        for (const u of parsed.users) {
+          if (!merged.some((x) => x.username === u.username)) {
+            merged.push(u);
+            added++;
+          }
+        }
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(merged));
+        setLocalUsers(merged);
+        setImportResult(
+          `Berhasil! ${added} siswa baru ditambahkan. Total sekarang: ${merged.length} siswa.`
+        );
+        // Trigger storage event so admin page refreshes
+        window.dispatchEvent(new StorageEvent('storage', { key: LOCAL_KEY }));
+      } catch (err) {
+        setImportError(`Gagal membaca file: ${String(err)}`);
+      }
+      // reset file input
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>⚙️ Setup Sinkronisasi Cloud</h1>
+          <h1 className={styles.title}>📂 Sinkronisasi Data Siswa</h1>
           <Link to="/admin" className={styles.backBtn}>← Kembali ke Admin</Link>
         </div>
 
-        {/* Panduan singkat */}
+        {/* Status */}
+        <div className={`${styles.card} ${localUsers.length > 0 ? styles.cardSuccess : styles.cardWarning}`}>
+          <h2 className={styles.cardTitle}>
+            {localUsers.length > 0 ? '✅ Data Ditemukan' : '⚠️ Belum Ada Data'}
+          </h2>
+          <p className={styles.helpText}>
+            Browser/HP ini menyimpan <strong>{localUsers.length} data siswa</strong>.
+          </p>
+          {localUsers.length > 0 && (
+            <ul className={styles.userList}>
+              {localUsers.map((u) => (
+                <li key={u.id} className={styles.userItem}>
+                  <span className={styles.userName}>{u.name}</span>
+                  <span className={styles.userMeta}>{u.username} · {u.kelas}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Panduan */}
         <div className={styles.guideBox}>
-          <h2 className={styles.guideTitle}>📋 Cara Setup (Lakukan di SETIAP device/browser)</h2>
+          <h2 className={styles.guideTitle}>📋 Cara Sinkronisasi Antar Device</h2>
           <ol className={styles.guideList}>
-            <li>Dapatkan <strong>Master Key</strong> dari <a href="https://jsonbin.io/app/app" target="_blank" rel="noreferrer" className={styles.guideLink}>jsonbin.io → Account Settings</a></li>
-            <li>Dapatkan <strong>BIN ID</strong> dari <a href="https://jsonbin.io/app/bins" target="_blank" rel="noreferrer" className={styles.guideLink}>jsonbin.io → Bins</a> (klik nama BIN, salin ID dari URL)</li>
-            <li>Isi form di bawah → klik <strong>Simpan Konfigurasi</strong></li>
-            <li>Klik <strong>Jalankan Test</strong> untuk verifikasi koneksi</li>
-            <li>Jika Langkah 3 menampilkan 0 siswa, klik <strong>Migrate Data</strong> di HP yang menyimpan data siswa</li>
+            <li>Buka halaman ini di <strong>HP/browser yang menyimpan data siswa</strong></li>
+            <li>Klik <strong>Export Data Siswa</strong> → file JSON akan terdownload</li>
+            <li>Kirim file tersebut ke PC (via WhatsApp, email, USB, dll.)</li>
+            <li>Buka halaman ini di <strong>PC/browser yang ingin disinkronkan</strong></li>
+            <li>Klik <strong>Import File JSON</strong> → pilih file yang sudah dikirim</li>
+            <li>Selesai — data siswa akan muncul di halaman Admin PC</li>
           </ol>
         </div>
 
-        {/* Status saat ini */}
-        <div className={`${styles.card} ${isReady ? styles.cardSuccess : styles.cardWarning}`}>
-          <h2 className={styles.cardTitle}>
-            {isReady ? '✅ Konfigurasi Aktif di Browser Ini' : '⚠️ Belum Dikonfigurasi di Browser Ini'}
-          </h2>
-          <div className={styles.configRow}>
-            <span className={styles.configLabel}>API Key:</span>
-            <code className={styles.configValue}>
-              {currentKey ? `${currentKey.slice(0, 15)}...` : '❌ KOSONG'}
-            </code>
-          </div>
-          <div className={styles.configRow}>
-            <span className={styles.configLabel}>BIN ID:</span>
-            <code className={styles.configValue}>{currentBin || '❌ KOSONG'}</code>
-          </div>
-          <div className={styles.configRow}>
-            <span className={styles.configLabel}>Data lokal:</span>
-            <code className={styles.configValue}>{localCount} siswa di browser ini</code>
-          </div>
-          {isReady && (
-            <button className={styles.btnDanger} onClick={handleClearCredentials}>
-              🗑️ Hapus Konfigurasi
-            </button>
-          )}
-        </div>
-
-        {/* Form input credentials */}
+        {/* Export */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>🔑 Masukkan API Key &amp; BIN ID JSONBin</h2>
+          <h2 className={styles.cardTitle}>📤 Export Data Siswa</h2>
           <p className={styles.helpText}>
-            Salin dari <strong>jsonbin.io</strong>. Konfigurasi ini disimpan di browser ini saja.
-            Ulangi di setiap device yang ingin sinkron.
-          </p>
-          <div className={styles.inputRow}>
-            <label className={styles.inputLabel}>Master Key (API Key) — dimulai dengan $2a$10$...</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              value={inputKey}
-              onChange={(e) => setInputKey(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          <div className={styles.inputRow}>
-            <label className={styles.inputLabel}>BIN ID — 24 karakter hex</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="6xxxxxxxxxxxxxxxxxxxxxxx"
-              value={inputBin}
-              onChange={(e) => setInputBin(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          <div className={styles.btnRow}>
-            <button className={styles.btnPrimary} onClick={handleSaveCredentials}>
-              {saved ? '✅ Tersimpan!' : '💾 Simpan Konfigurasi'}
-            </button>
-          </div>
-        </div>
-
-        {/* Test koneksi */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>🧪 Test Koneksi JSONBin</h2>
-          <p className={styles.helpText}>
-            Klik tombol di bawah untuk memverifikasi API Key dan BIN ID benar.
-          </p>
-          <button
-            className={styles.btnPrimary}
-            onClick={() => void runTests()}
-            disabled={running || !isReady}
-          >
-            {running ? '⏳ Testing...' : '▶ Jalankan Test'}
-          </button>
-          {!isReady && <p className={styles.helpText}>⬆️ Simpan konfigurasi terlebih dahulu.</p>}
-
-          {results.length > 0 && (
-            <div className={styles.resultList}>
-              {results.map((r, i) => (
-                <div key={i} className={`${styles.resultRow} ${r.ok ? styles.resultOk : styles.resultFail}`}>
-                  <div className={styles.resultStep}>{r.step}</div>
-                  <div className={styles.resultMsg}>
-                    {r.ok ? '✅ ' : '❌ '}{r.message}
-                  </div>
-                  {r.data !== undefined && (
-                    <pre className={styles.resultData}>{JSON.stringify(r.data, null, 2)}</pre>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Migrate data */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>📤 Migrate Data Siswa ke Cloud</h2>
-          <p className={styles.helpText}>
-            Jika ada data siswa di browser/HP ini yang belum masuk JSONBin
-            (misal: data 6 siswa yang tersimpan di HP), klik tombol ini
-            untuk meng-upload semua data ke cloud sehingga bisa diakses semua device.
+            Lakukan ini di <strong>HP/browser yang berisi data siswa</strong>.
+            File JSON akan terdownload dan bisa dikirim ke device lain.
           </p>
           <div className={styles.migrateInfo}>
             <span>Data di browser ini:</span>
-            <strong>{localCount} siswa</strong>
+            <strong>{localUsers.length} siswa</strong>
           </div>
           <button
-            className={styles.btnWarning}
-            onClick={() => void handleMigrate()}
-            disabled={!isReady || localCount === 0}
+            className={styles.btnPrimary}
+            onClick={handleExport}
+            disabled={localUsers.length === 0}
           >
-            📤 Upload Data ke JSONBin ({localCount} siswa)
+            📥 Export Data Siswa ({localUsers.length} siswa)
           </button>
-          {localCount === 0 && (
+          {localUsers.length === 0 && (
             <p className={styles.helpText}>
-              ℹ️ Tidak ada data siswa di browser ini. Buka halaman ini di HP/browser yang digunakan siswa mendaftar.
+              ℹ️ Tidak ada data di browser ini. Coba buka halaman ini di HP yang digunakan siswa mendaftar.
             </p>
           )}
         </div>
 
+        {/* Import */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>📂 Import File JSON</h2>
+          <p className={styles.helpText}>
+            Lakukan ini di <strong>PC/browser yang ingin mendapat data siswa</strong>.
+            Pilih file JSON yang sudah di-export dari HP.
+          </p>
+          <label className={styles.fileLabel}>
+            <input
+              type="file"
+              accept=".json,application/json"
+              className={styles.fileInput}
+              onChange={handleFileChange}
+            />
+            📂 Pilih File JSON (elkpd-siswa-*.json)
+          </label>
+          {importResult && (
+            <div className={styles.alertSuccess}>{importResult}</div>
+          )}
+          {importError && (
+            <div className={styles.alertError}>{importError}</div>
+          )}
+        </div>
+
         <div className={styles.note}>
-          <strong>💡 Tips Penting:</strong>
-          <ul className={styles.tipList}>
-            <li>Konfigurasi ini hanya tersimpan di browser ini — ulangi di setiap device yang berbeda.</li>
-            <li>Buka halaman ini di HP yang berisi 6 data siswa → klik <strong>Upload Data ke JSONBin</strong>.</li>
-            <li>Setelah migrate, buka halaman Admin di PC — data siswa akan muncul.</li>
-            <li>BIN ID dan API Key bisa dicek di <a href="https://jsonbin.io/app" target="_blank" rel="noreferrer" className={styles.guideLink}>jsonbin.io/app</a></li>
-          </ul>
+          <strong>💡 Tips:</strong> Setelah import, buka <Link to="/admin" className={styles.guideLink}>halaman Admin</Link> dan klik tombol <strong>Refresh</strong> — semua siswa akan muncul.
         </div>
       </div>
     </div>
