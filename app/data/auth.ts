@@ -14,8 +14,8 @@ export const daftarAkun: User[] = [
   {
     id: 'guru-001',
     name: 'Ibu Sari Dewi, S.Pd.',
-    username: 'guru',
-    password: 'guru123',
+    username: 'Sir',
+    password: 'Crocodile',
     role: 'guru',
     nip: '198503122010012005',
   },
