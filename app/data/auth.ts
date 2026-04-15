@@ -13,7 +13,7 @@ export interface User {
 export const daftarAkun: User[] = [
   {
     id: 'guru-001',
-    name: 'Ibu Sari Dewi, S.Pd.',
+    name: 'M. Muwaffiq AddinilHaq',
     username: 'Sir',
     password: 'Crocodile',
     role: 'guru',
