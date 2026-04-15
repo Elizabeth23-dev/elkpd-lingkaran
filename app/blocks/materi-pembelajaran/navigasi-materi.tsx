@@ -18,14 +18,15 @@ export function NavigasiMateri({ className, topicId }: NavigasiMateriProps) {
   const next = currentIdx < daftarMateri.length - 1 ? daftarMateri[currentIdx + 1] : null;
 
   const navigate = useNavigate();
-  const { isOpen, pendingPath, requestNavigation, submitToken, dismiss } = useTokenGate();
+  const { isOpen, confirmedPath, requestNavigation, submitToken, dismiss, clearConfirmedPath } = useTokenGate();
 
-  // When token verified and pendingPath set (modal closed), navigate
+  // Navigasi ke path yang sudah dikonfirmasi (bebas akses atau token valid)
   useEffect(() => {
-    if (!isOpen && pendingPath) {
-      navigate(pendingPath);
+    if (confirmedPath) {
+      clearConfirmedPath();
+      navigate(confirmedPath);
     }
-  }, [isOpen, pendingPath, navigate]);
+  }, [confirmedPath, clearConfirmedPath, navigate]);
 
   const handleNextClick = (e: React.MouseEvent, path: string) => {
     e.preventDefault();

@@ -22,14 +22,15 @@ const statusTypes: Array<"done" | "active" | "idle"> = ["done", "active", "idle"
 
 export function DaftarMateri({ className }: DaftarMateriProps) {
   const navigate = useNavigate();
-  const { isOpen, pendingPath, requestNavigation, submitToken, dismiss } = useTokenGate();
+  const { isOpen, confirmedPath, requestNavigation, submitToken, dismiss, clearConfirmedPath } = useTokenGate();
 
-  // When modal closes with a valid token, navigate to pending path
+  // Navigasi ke path yang sudah dikonfirmasi (bebas akses atau token valid)
   useEffect(() => {
-    if (!isOpen && pendingPath) {
-      navigate(pendingPath);
+    if (confirmedPath) {
+      clearConfirmedPath();
+      navigate(confirmedPath);
     }
-  }, [isOpen, pendingPath, navigate]);
+  }, [confirmedPath, clearConfirmedPath, navigate]);
 
   const handleCardClick = (e: React.MouseEvent, path: string) => {
     e.preventDefault();

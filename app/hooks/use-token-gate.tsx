@@ -36,23 +36,28 @@ function materiIdFromPath(path: string): string {
 
 export interface UseTokenGateReturn {
   isOpen: boolean;
-  pendingPath: string | null;
+  /** Path yang sudah diverifikasi dan siap dinavigasi (sekali pakai) */
+  confirmedPath: string | null;
   /** Token yang dibutuhkan untuk materi yang sedang ditunggu */
   requiredMateriId: string | null;
   requestNavigation: (path: string) => void;
   submitToken: (token: string) => boolean;
   dismiss: () => void;
+  /** Dipanggil setelah navigasi ke confirmedPath dilakukan untuk mereset state */
+  clearConfirmedPath: () => void;
 }
 
 export function useTokenGate(): UseTokenGateReturn {
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmedPath, setConfirmedPath] = useState<string | null>(null);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [requiredMateriId, setRequiredMateriId] = useState<string | null>(null);
 
   const requestNavigation = useCallback((path: string) => {
     const materiId = materiIdFromPath(path);
     if (isTokenValidForMateri(materiId)) {
-      setPendingPath(path);
+      // Bebas akses — langsung tandai sebagai confirmed
+      setConfirmedPath(path);
       setIsOpen(false);
     } else {
       setRequiredMateriId(materiId);
@@ -67,10 +72,13 @@ export function useTokenGate(): UseTokenGateReturn {
     if (token.trim().toUpperCase() === required?.toUpperCase()) {
       saveTokenForMateri(requiredMateriId);
       setIsOpen(false);
+      setConfirmedPath(pendingPath);
+      setPendingPath(null);
+      setRequiredMateriId(null);
       return true;
     }
     return false;
-  }, [requiredMateriId]);
+  }, [requiredMateriId, pendingPath]);
 
   const dismiss = useCallback(() => {
     setIsOpen(false);
@@ -78,5 +86,9 @@ export function useTokenGate(): UseTokenGateReturn {
     setRequiredMateriId(null);
   }, []);
 
-  return { isOpen, pendingPath, requiredMateriId, requestNavigation, submitToken, dismiss };
+  const clearConfirmedPath = useCallback(() => {
+    setConfirmedPath(null);
+  }, []);
+
+  return { isOpen, confirmedPath, requiredMateriId, requestNavigation, submitToken, dismiss, clearConfirmedPath };
 }
