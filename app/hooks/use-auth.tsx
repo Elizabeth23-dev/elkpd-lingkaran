@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { User, UserRole, RegisterPayload, RegisterResult } from '~/data/auth';
 import { authenticate, registerSiswa } from '~/data/auth';
+import { invalidateCloudCache } from '~/data/cloud-storage';
 
 const AUTH_KEY = 'elkpd-auth';
 
 function loadSession(): User | null {
   try {
-    const raw = sessionStorage.getItem(AUTH_KEY);
+    const raw = localStorage.getItem(AUTH_KEY);
     return raw ? (JSON.parse(raw) as User) : null;
   } catch {
     return null;
@@ -15,9 +16,9 @@ function loadSession(): User | null {
 
 function saveSession(user: User | null): void {
   if (user) {
-    sessionStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
   } else {
-    sessionStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(AUTH_KEY);
   }
 }
 
@@ -34,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadSession);
 
   const login = useCallback(async (username: string, password: string, role: UserRole): Promise<boolean> => {
+    // Invalidate cache sebelum login agar data siswa terbaru selalu di-fetch dari cloud
+    invalidateCloudCache();
     const found = await authenticate(username, password, role);
     if (found) {
       setUser(found);

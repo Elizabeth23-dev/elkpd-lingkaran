@@ -18,7 +18,7 @@ const BIN_ID = (typeof window !== 'undefined' ? (window as any).__ELKPD_JSONBIN_
 
 const LOCAL_FALLBACK_KEY = 'elkpd-registered-users';
 const CACHE_KEY = 'elkpd-cloud-cache';
-const CACHE_TTL = 30_000; // 30 detik
+const CACHE_TTL = 60_000; // 60 detik
 
 interface CloudData {
   users: CloudUser[];
@@ -44,7 +44,7 @@ function isConfigured(): boolean {
 
 function getCache(): CloudUser[] | null {
   try {
-    const raw = sessionStorage.getItem(CACHE_KEY);
+    const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const entry = JSON.parse(raw) as CacheEntry;
     if (Date.now() - entry.ts > CACHE_TTL) return null;
@@ -57,14 +57,19 @@ function getCache(): CloudUser[] | null {
 function setCache(users: CloudUser[]): void {
   try {
     const entry: CacheEntry = { data: users, ts: Date.now() };
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(entry));
+    localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
   } catch { /* ignore */ }
 }
 
 function invalidateCache(): void {
   try {
-    sessionStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(CACHE_KEY);
   } catch { /* ignore */ }
+}
+
+/** Ekspor untuk dipakai dari luar (misal: saat login guru) */
+export function invalidateCloudCache(): void {
+  invalidateCache();
 }
 
 /** Ambil daftar user dari cloud. Fallback ke localStorage jika tidak terkonfigurasi. */
