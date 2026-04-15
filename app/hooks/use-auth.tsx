@@ -23,9 +23,9 @@ function saveSession(user: User | null): void {
 
 interface AuthContextValue {
   user: User | null;
-  login: (username: string, password: string, role: UserRole) => boolean;
+  login: (username: string, password: string, role: UserRole) => Promise<boolean>;
   logout: () => void;
-  register: (payload: RegisterPayload) => RegisterResult;
+  register: (payload: RegisterPayload) => Promise<RegisterResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -33,8 +33,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadSession);
 
-  const login = useCallback((username: string, password: string, role: UserRole): boolean => {
-    const found = authenticate(username, password, role);
+  const login = useCallback(async (username: string, password: string, role: UserRole): Promise<boolean> => {
+    const found = await authenticate(username, password, role);
     if (found) {
       setUser(found);
       saveSession(found);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveSession(null);
   }, []);
 
-  const register = useCallback((payload: RegisterPayload): RegisterResult => {
+  const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResult> => {
     return registerSiswa(payload);
   }, []);
 

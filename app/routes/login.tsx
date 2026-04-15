@@ -45,7 +45,7 @@ export default function LoginPage() {
     setSuccess('');
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!username.trim() || !password.trim()) {
@@ -53,18 +53,21 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      const ok = login(username.trim(), password.trim(), role);
+    try {
+      const ok = await login(username.trim(), password.trim(), role);
       if (ok) {
         navigate(role === 'guru' ? '/admin' : '/');
       } else {
         setError('Username atau kata sandi salah. Coba lagi.');
       }
+    } catch {
+      setError('Terjadi kesalahan. Periksa koneksi internet Anda.');
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -77,8 +80,8 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      const result = register({
+    try {
+      const result = await register({
         name: regName.trim(),
         username: regUsername.trim(),
         password: regPassword.trim(),
@@ -92,8 +95,11 @@ export default function LoginPage() {
       } else {
         setError(result.error);
       }
+    } catch {
+      setError('Terjadi kesalahan saat mendaftar. Periksa koneksi internet Anda.');
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   return (
@@ -254,7 +260,7 @@ export default function LoginPage() {
 
               <button type="submit" className={styles.submitBtn} disabled={loading}>
                 <UserPlus size={18} />
-                {loading ? 'Memproses...' : 'Daftar Sekarang'}
+                {loading ? 'Mendaftarkan...' : 'Daftar Sekarang'}
               </button>
             </form>
 

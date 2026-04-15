@@ -5,7 +5,8 @@ import {
   XCircle, LogOut, ChevronRight, Layers, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
-import { getDaftarAkun } from '~/data/auth';
+import { getDaftarAkunAsync } from '~/data/auth';
+import type { User } from '~/data/auth';
 import { daftarMateri } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
 import styles from './admin.module.css';
@@ -32,17 +33,26 @@ function gradeLabel(score: number, total: number): { label: string; className: s
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [siswaList, setSiswaList] = useState(() => getDaftarAkun().filter((u) => u.role === 'siswa'));
+  const [siswaList, setSiswaList] = useState<User[]>([]);
+  const [loadingSiswa, setLoadingSiswa] = useState(false);
 
-  const refreshSiswaList = useCallback(() => {
-    setSiswaList(getDaftarAkun().filter((u) => u.role === 'siswa'));
+  const refreshSiswaList = useCallback(async () => {
+    setLoadingSiswa(true);
+    try {
+      const all = await getDaftarAkunAsync();
+      setSiswaList(all.filter((u) => u.role === 'siswa'));
+    } catch {
+      // fallback sudah ditangani di getDaftarAkunAsync
+    } finally {
+      setLoadingSiswa(false);
+    }
   }, []);
 
-  // Refresh list saat halaman dimuat & saat sessionStorage berubah (siswa baru mendaftar)
+  // Refresh list saat halaman dimuat & saat localStorage berubah (siswa baru mendaftar di tab lain)
   useEffect(() => {
-    refreshSiswaList();
-    window.addEventListener('storage', refreshSiswaList);
-    return () => window.removeEventListener('storage', refreshSiswaList);
+    void refreshSiswaList();
+    window.addEventListener('storage', () => void refreshSiswaList());
+    return () => window.removeEventListener('storage', () => void refreshSiswaList());
   }, [refreshSiswaList]);
 
   const handleResetNilai = useCallback((siswaId: string) => {
@@ -161,8 +171,9 @@ export default function AdminPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Users size={20} /> Rekap Nilai Siswa
-            <button className={styles.refreshBtn} onClick={refreshSiswaList} title="Muat ulang daftar siswa">
-              <RotateCcw size={14} /> Refresh
+            <button className={styles.refreshBtn} onClick={() => void refreshSiswaList()} title="Muat ulang daftar siswa" disabled={loadingSiswa}>
+              <RotateCcw size={14} className={loadingSiswa ? styles.spinning : undefined} />
+              {loadingSiswa ? 'Memuat...' : 'Refresh'}
             </button>
           </h2>
           <div className={styles.tableWrapper}>
