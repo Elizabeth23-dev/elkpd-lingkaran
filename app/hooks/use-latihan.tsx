@@ -10,6 +10,16 @@ export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
 }
 
+/** Cek apakah siswa sudah menyelesaikan latihan untuk topik ini */
+export function sudahSelesai(siswaId: string, topicId: string): boolean {
+  try {
+    const raw = sessionStorage.getItem(hasilKey(siswaId, topicId));
+    return raw !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function useLatihan(topicId: string) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -22,16 +32,19 @@ export function useLatihan(topicId: string) {
   const [isFinished, setIsFinished] = useState(false);
   const totalTimeRef = useRef(0);
 
-  // Reset semua state dan hapus data hasil lama saat masuk halaman latihan
+  // Jika siswa sudah mengerjakan latihan ini, redirect ke halaman hasil
   useEffect(() => {
-    if (user) sessionStorage.removeItem(hasilKey(user.id, topicId));
+    if (user && user.role === 'siswa' && sudahSelesai(user.id, topicId)) {
+      navigate(`/hasil/${topicId}`, { replace: true });
+      return;
+    }
     setCurrentIndex(0);
     setAnswers({});
     setSubmitted({});
     setTimeLeft(WAKTU_PER_SOAL);
     setIsFinished(false);
     totalTimeRef.current = 0;
-  }, [topicId, user]);
+  }, [topicId, user, navigate]);
 
   // Reset timer saat pindah soal
   useEffect(() => {

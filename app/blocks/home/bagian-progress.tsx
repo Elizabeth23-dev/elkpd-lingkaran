@@ -42,15 +42,17 @@ export function BagianProgress({ className }: BagianProgressProps) {
             <span className={styles.progressBarTitle}>Penyelesaian Keseluruhan</span>
             <div className={styles.progressBarRight}>
               <span className={styles.progressBarValue}>{progressKeseluruhan}%</span>
-              <button
-                className={styles.resetButton}
-                onClick={reset}
-                title="Reset progress"
-                type="button"
-              >
-                <RotateCcw size={15} />
-                Reset
-              </button>
+              {user?.role === 'guru' && (
+                <button
+                  className={styles.resetButton}
+                  onClick={reset}
+                  title="Reset progress"
+                  type="button"
+                >
+                  <RotateCcw size={15} />
+                  Reset
+                </button>
+              )}
             </div>
           </div>
           <div className={styles.bar}>
