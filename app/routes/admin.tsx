@@ -144,10 +144,15 @@ export default function AdminPage() {
               <p className={styles.pageSubtitle}>Selamat datang, {user.name}</p>
             </div>
           </div>
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            <LogOut size={16} />
-            Keluar
-          </button>
+          <div className={styles.topBarActions}>
+            <Link to="/debug-cloud" className={styles.setupCloudBtn}>
+              ☁️ Setup Cloud
+            </Link>
+            <button className={styles.logoutBtn} onClick={handleLogout}>
+              <LogOut size={16} />
+              Keluar
+            </button>
+          </div>
         </div>
       </div>
 

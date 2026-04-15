@@ -1,9 +1,9 @@
 /**
- * Halaman setup & debug JSONBin.
- * Akses di /debug-cloud
- * Guru bisa input API key & BIN ID di sini agar tersimpan di localStorage.
+ * Halaman setup & sinkronisasi JSONBin.
+ * Akses di /debug-cloud — bisa juga dari tombol "Setup Cloud" di halaman Admin.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import {
   getActiveApiKey,
   getActiveBinId,
@@ -25,7 +25,7 @@ interface TestResult {
 }
 
 export function meta() {
-  return [{ title: 'Setup Cloud Storage — E-LKPD' }];
+  return [{ title: 'Setup Sinkronisasi Cloud — E-LKPD' }];
 }
 
 export default function DebugCloudPage() {
@@ -36,17 +36,28 @@ export default function DebugCloudPage() {
   const [saved, setSaved] = useState(false);
   const [currentKey, setCurrentKey] = useState('');
   const [currentBin, setCurrentBin] = useState('');
+  const [localCount, setLocalCount] = useState(0);
 
   useEffect(() => {
     setCurrentKey(getActiveApiKey());
     setCurrentBin(getActiveBinId());
+    // Hitung data di localStorage
+    try {
+      const raw = localStorage.getItem('elkpd-registered-users');
+      const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
+      setLocalCount(users.length);
+    } catch { /* ignore */ }
   }, []);
 
   function handleSaveCredentials() {
     const key = inputKey.trim();
     const bin = inputBin.trim();
     if (!key || !bin) {
-      alert('API Key dan BIN ID harus diisi');
+      alert('API Key dan BIN ID harus diisi!');
+      return;
+    }
+    if (!key.startsWith('$2a$10$')) {
+      alert('Format API Key tidak valid. Harus diawali $2a$10$');
       return;
     }
     setManualCredentials(key, bin);
@@ -58,6 +69,7 @@ export default function DebugCloudPage() {
   }
 
   function handleClearCredentials() {
+    if (!confirm('Hapus konfigurasi API Key & BIN ID dari browser ini?')) return;
     clearManualCredentials();
     setCurrentKey(getActiveApiKey());
     setCurrentBin(getActiveBinId());
@@ -73,18 +85,18 @@ export default function DebugCloudPage() {
     setResults([]);
     setRunning(true);
 
-    // Step 1: Cek konfigurasi
+    // Step 1: Konfigurasi
     log.push({
-      step: '1. Konfigurasi',
+      step: 'Langkah 1 — Konfigurasi',
       ok: Boolean(key && bin),
       message: key && bin
-        ? `✅ API Key: ${key.slice(0, 12)}... | BIN ID: ${bin}`
-        : `❌ KOSONG — Masukkan API Key & BIN ID di form di atas`,
+        ? `API Key: ${key.slice(0, 15)}... | BIN ID: ${bin}`
+        : 'KOSONG — Masukkan API Key & BIN ID di form di bawah lalu klik Simpan',
     });
     setResults([...log]);
     if (!key || !bin) { setRunning(false); return; }
 
-    // Step 2: Test fetch BIN
+    // Step 2: Test koneksi JSONBin
     try {
       const res = await fetch(`${JSONBIN_BASE}/b/${bin}/latest`, {
         headers: { 'X-Master-Key': key, 'X-Bin-Meta': 'false', 'Cache-Control': 'no-cache' },
@@ -93,44 +105,31 @@ export default function DebugCloudPage() {
       let parsed: unknown = null;
       try { parsed = JSON.parse(text); } catch { /* ignore */ }
       log.push({
-        step: '2. Koneksi ke JSONBin',
+        step: 'Langkah 2 — Koneksi ke JSONBin',
         ok: res.ok,
         message: res.ok
-          ? `✅ HTTP ${res.status} — Berhasil terhubung ke JSONBin`
-          : `❌ HTTP ${res.status} — ${text.slice(0, 200)}`,
+          ? `Berhasil terhubung ke JSONBin (HTTP ${res.status})`
+          : `GAGAL: HTTP ${res.status} — ${text.slice(0, 200)}`,
         data: parsed,
       });
     } catch (err) {
-      log.push({ step: '2. Koneksi ke JSONBin', ok: false, message: `❌ Network error: ${String(err)}` });
+      log.push({ step: 'Langkah 2 — Koneksi ke JSONBin', ok: false, message: `Network error: ${String(err)}` });
     }
     setResults([...log]);
 
-    // Step 3: Fetch users via cloud-storage
+    // Step 3: Data siswa di cloud
     try {
       const users = await fetchCloudUsers(true);
       log.push({
-        step: '3. Data Siswa di JSONBin',
+        step: 'Langkah 3 — Data Siswa di Cloud',
         ok: true,
-        message: `✅ ${users.length} siswa terdaftar di cloud`,
-        data: users.map((u) => ({ name: u.name, username: u.username, kelas: u.kelas })),
+        message: users.length > 0
+          ? `${users.length} siswa tersimpan di JSONBin`
+          : 'Cloud kosong (belum ada siswa — lakukan Migrate dari HP yang menyimpan data)',
+        data: users.map((u) => ({ nama: u.name, username: u.username, kelas: u.kelas })),
       });
     } catch (err) {
-      log.push({ step: '3. Data Siswa', ok: false, message: `❌ Error: ${String(err)}` });
-    }
-    setResults([...log]);
-
-    // Step 4: localStorage backup
-    try {
-      const raw = localStorage.getItem('elkpd-registered-users');
-      const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
-      log.push({
-        step: '4. Backup localStorage (browser ini)',
-        ok: true,
-        message: `${users.length} siswa di localStorage browser ini`,
-        data: users.map((u) => ({ name: u.name, username: u.username })),
-      });
-    } catch {
-      log.push({ step: '4. localStorage', ok: false, message: 'Error membaca localStorage' });
+      log.push({ step: 'Langkah 3 — Data Siswa di Cloud', ok: false, message: `Error: ${String(err)}` });
     }
     setResults([...log]);
     setRunning(false);
@@ -139,16 +138,21 @@ export default function DebugCloudPage() {
   async function handleMigrate() {
     const key = getActiveApiKey();
     const bin = getActiveBinId();
-    if (!key || !bin) { alert('Konfigurasi API Key & BIN ID terlebih dahulu'); return; }
+    if (!key || !bin) {
+      alert('Simpan konfigurasi API Key & BIN ID terlebih dahulu, lalu jalankan Test untuk memastikan koneksi berhasil.');
+      return;
+    }
 
     const raw = localStorage.getItem('elkpd-registered-users');
     const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
-    if (users.length === 0) { alert('Tidak ada data siswa di localStorage browser ini'); return; }
+    if (users.length === 0) {
+      alert('Tidak ada data siswa di browser/HP ini. Coba buka halaman ini di HP yang digunakan siswa untuk daftar.');
+      return;
+    }
 
-    if (!confirm(`Migrate ${users.length} siswa dari localStorage ke JSONBin?`)) return;
+    if (!confirm(`Upload ${users.length} siswa dari browser ini ke JSONBin agar bisa diakses semua device?`)) return;
 
     try {
-      // Merge dengan data cloud yang ada
       const cloudUsers = await fetchCloudUsers(true);
       const merged = [...cloudUsers];
       for (const u of users) {
@@ -157,10 +161,10 @@ export default function DebugCloudPage() {
         }
       }
       await saveCloudUsers(merged);
-      alert(`✅ Berhasil migrate! Total ${merged.length} siswa di JSONBin.`);
+      alert(`Berhasil! Total ${merged.length} siswa tersimpan di JSONBin. Sekarang buka halaman Admin untuk melihat daftar siswa.`);
       void runTests();
     } catch (err) {
-      alert(`❌ Gagal migrate: ${String(err)}`);
+      alert(`Gagal upload: ${String(err)}`);
     }
   }
 
@@ -169,16 +173,27 @@ export default function DebugCloudPage() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <h1 className={styles.title}>⚙️ Setup Sinkronisasi Cloud</h1>
-        <p className={styles.subtitle}>
-          Masukkan API Key dan BIN ID JSONBin agar data siswa tersinkron di semua device.
-          Lakukan ini <strong>di setiap browser/device</strong> yang digunakan.
-        </p>
+        <div className={styles.header}>
+          <h1 className={styles.title}>⚙️ Setup Sinkronisasi Cloud</h1>
+          <Link to="/admin" className={styles.backBtn}>← Kembali ke Admin</Link>
+        </div>
+
+        {/* Panduan singkat */}
+        <div className={styles.guideBox}>
+          <h2 className={styles.guideTitle}>📋 Cara Setup (Lakukan di SETIAP device/browser)</h2>
+          <ol className={styles.guideList}>
+            <li>Dapatkan <strong>Master Key</strong> dari <a href="https://jsonbin.io/app/app" target="_blank" rel="noreferrer" className={styles.guideLink}>jsonbin.io → Account Settings</a></li>
+            <li>Dapatkan <strong>BIN ID</strong> dari <a href="https://jsonbin.io/app/bins" target="_blank" rel="noreferrer" className={styles.guideLink}>jsonbin.io → Bins</a> (klik nama BIN, salin ID dari URL)</li>
+            <li>Isi form di bawah → klik <strong>Simpan Konfigurasi</strong></li>
+            <li>Klik <strong>Jalankan Test</strong> untuk verifikasi koneksi</li>
+            <li>Jika Langkah 3 menampilkan 0 siswa, klik <strong>Migrate Data</strong> di HP yang menyimpan data siswa</li>
+          </ol>
+        </div>
 
         {/* Status saat ini */}
         <div className={`${styles.card} ${isReady ? styles.cardSuccess : styles.cardWarning}`}>
           <h2 className={styles.cardTitle}>
-            {isReady ? '✅ Konfigurasi Aktif' : '⚠️ Belum Dikonfigurasi'}
+            {isReady ? '✅ Konfigurasi Aktif di Browser Ini' : '⚠️ Belum Dikonfigurasi di Browser Ini'}
           </h2>
           <div className={styles.configRow}>
             <span className={styles.configLabel}>API Key:</span>
@@ -190,6 +205,10 @@ export default function DebugCloudPage() {
             <span className={styles.configLabel}>BIN ID:</span>
             <code className={styles.configValue}>{currentBin || '❌ KOSONG'}</code>
           </div>
+          <div className={styles.configRow}>
+            <span className={styles.configLabel}>Data lokal:</span>
+            <code className={styles.configValue}>{localCount} siswa di browser ini</code>
+          </div>
           {isReady && (
             <button className={styles.btnDanger} onClick={handleClearCredentials}>
               🗑️ Hapus Konfigurasi
@@ -199,29 +218,31 @@ export default function DebugCloudPage() {
 
         {/* Form input credentials */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>🔑 Input API Key & BIN ID</h2>
+          <h2 className={styles.cardTitle}>🔑 Masukkan API Key &amp; BIN ID JSONBin</h2>
           <p className={styles.helpText}>
-            Dapatkan dari <strong>jsonbin.io</strong> → login → Account → Master Key &amp; Bins.
-            Simpan di browser ini agar tersinkron.
+            Salin dari <strong>jsonbin.io</strong>. Konfigurasi ini disimpan di browser ini saja.
+            Ulangi di setiap device yang ingin sinkron.
           </p>
           <div className={styles.inputRow}>
-            <label className={styles.inputLabel}>Master Key (API Key):</label>
+            <label className={styles.inputLabel}>Master Key (API Key) — dimulai dengan $2a$10$...</label>
             <input
               className={styles.input}
               type="text"
-              placeholder="$2a$10$..."
+              placeholder="$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               value={inputKey}
               onChange={(e) => setInputKey(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className={styles.inputRow}>
-            <label className={styles.inputLabel}>BIN ID:</label>
+            <label className={styles.inputLabel}>BIN ID — 24 karakter hex</label>
             <input
               className={styles.input}
               type="text"
               placeholder="6xxxxxxxxxxxxxxxxxxxxxxx"
               value={inputBin}
               onChange={(e) => setInputBin(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className={styles.btnRow}>
@@ -233,7 +254,10 @@ export default function DebugCloudPage() {
 
         {/* Test koneksi */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>🧪 Test Koneksi</h2>
+          <h2 className={styles.cardTitle}>🧪 Test Koneksi JSONBin</h2>
+          <p className={styles.helpText}>
+            Klik tombol di bawah untuk memverifikasi API Key dan BIN ID benar.
+          </p>
           <button
             className={styles.btnPrimary}
             onClick={() => void runTests()}
@@ -241,14 +265,16 @@ export default function DebugCloudPage() {
           >
             {running ? '⏳ Testing...' : '▶ Jalankan Test'}
           </button>
-          {!isReady && <p className={styles.helpText}>Simpan konfigurasi terlebih dahulu.</p>}
+          {!isReady && <p className={styles.helpText}>⬆️ Simpan konfigurasi terlebih dahulu.</p>}
 
           {results.length > 0 && (
             <div className={styles.resultList}>
               {results.map((r, i) => (
                 <div key={i} className={`${styles.resultRow} ${r.ok ? styles.resultOk : styles.resultFail}`}>
                   <div className={styles.resultStep}>{r.step}</div>
-                  <div className={styles.resultMsg}>{r.message}</div>
+                  <div className={styles.resultMsg}>
+                    {r.ok ? '✅ ' : '❌ '}{r.message}
+                  </div>
                   {r.data !== undefined && (
                     <pre className={styles.resultData}>{JSON.stringify(r.data, null, 2)}</pre>
                   )}
@@ -260,24 +286,39 @@ export default function DebugCloudPage() {
 
         {/* Migrate data */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>📤 Migrate Data ke Cloud</h2>
+          <h2 className={styles.cardTitle}>📤 Migrate Data Siswa ke Cloud</h2>
           <p className={styles.helpText}>
-            Jika ada data siswa di browser/HP ini (localStorage) yang belum masuk JSONBin,
-            klik tombol ini untuk memindahkannya ke cloud.
+            Jika ada data siswa di browser/HP ini yang belum masuk JSONBin
+            (misal: data 6 siswa yang tersimpan di HP), klik tombol ini
+            untuk meng-upload semua data ke cloud sehingga bisa diakses semua device.
           </p>
+          <div className={styles.migrateInfo}>
+            <span>Data di browser ini:</span>
+            <strong>{localCount} siswa</strong>
+          </div>
           <button
             className={styles.btnWarning}
             onClick={() => void handleMigrate()}
-            disabled={!isReady}
+            disabled={!isReady || localCount === 0}
           >
-            📤 Migrate Data localStorage → JSONBin
+            📤 Upload Data ke JSONBin ({localCount} siswa)
           </button>
+          {localCount === 0 && (
+            <p className={styles.helpText}>
+              ℹ️ Tidak ada data siswa di browser ini. Buka halaman ini di HP/browser yang digunakan siswa mendaftar.
+            </p>
+          )}
         </div>
 
-        <p className={styles.note}>
-          💡 <strong>Tips:</strong> Buka halaman ini di HP yang berisi data siswa, lalu klik Migrate.
-          Setelah itu, halaman admin akan otomatis sinkron dari JSONBin.
-        </p>
+        <div className={styles.note}>
+          <strong>💡 Tips Penting:</strong>
+          <ul className={styles.tipList}>
+            <li>Konfigurasi ini hanya tersimpan di browser ini — ulangi di setiap device yang berbeda.</li>
+            <li>Buka halaman ini di HP yang berisi 6 data siswa → klik <strong>Upload Data ke JSONBin</strong>.</li>
+            <li>Setelah migrate, buka halaman Admin di PC — data siswa akan muncul.</li>
+            <li>BIN ID dan API Key bisa dicek di <a href="https://jsonbin.io/app" target="_blank" rel="noreferrer" className={styles.guideLink}>jsonbin.io/app</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   );
