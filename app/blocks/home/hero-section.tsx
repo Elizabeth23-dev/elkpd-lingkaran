@@ -21,21 +21,21 @@ export function HeroSection({ className }: HeroSectionProps) {
             dengan Cara Menyenangkan
           </h1>
           <p className={styles.description}>
-            Platform e-LKPD interaktif untuk memahami konsep lingkaran, persamaan lingkaran,
-            garis singgung, dan hubungan antar lingkaran secara mendalam dan menyenangkan.
+            Platform e-LKPD interaktif untuk memahami definisi dan unsur lingkaran,
+            busur dan sudut lingkaran, serta garis singgung lingkaran secara mendalam dan menyenangkan.
           </p>
           <div className={styles.goals}>
             <div className={styles.goalItem}>
               <Target size={16} className={styles.goalIcon} />
-              <span>Memahami konsep dan unsur lingkaran</span>
+              <span>Memahami definisi, unsur, keliling, dan luas lingkaran</span>
             </div>
             <div className={styles.goalItem}>
               <Target size={16} className={styles.goalIcon} />
-              <span>Menguasai persamaan lingkaran dan garis singgung</span>
+              <span>Menguasai busur, sudut pusat, sudut keliling, dan juring</span>
             </div>
             <div className={styles.goalItem}>
               <Target size={16} className={styles.goalIcon} />
-              <span>Mengerjakan soal-soal latihan interaktif</span>
+              <span>Menentukan persamaan dan sifat garis singgung lingkaran</span>
             </div>
           </div>
           <div className={styles.ctas}>
