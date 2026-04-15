@@ -6,26 +6,9 @@ const MATERI_TOKENS: Record<string, string> = {
   'lingkaran-garis-singgung': 'GOOBER',
 };
 
-const SESSION_PREFIX = 'elkpd-token-';
-
 function isTokenValidForMateri(materiId: string): boolean {
   const required = MATERI_TOKENS[materiId];
-  if (!required) return true; // Materi tanpa token → bebas akses
-  try {
-    return sessionStorage.getItem(`${SESSION_PREFIX}${materiId}`) === required;
-  } catch {
-    return false;
-  }
-}
-
-function saveTokenForMateri(materiId: string): void {
-  const required = MATERI_TOKENS[materiId];
-  if (!required) return;
-  try {
-    sessionStorage.setItem(`${SESSION_PREFIX}${materiId}`, required);
-  } catch {
-    // ignore
-  }
+  return !required; // Materi tanpa token → bebas akses; bertoken → selalu minta token
 }
 
 /** Ambil ID materi dari path, e.g. '/materi/lingkaran-busur' → 'lingkaran-busur' */
@@ -70,7 +53,6 @@ export function useTokenGate(): UseTokenGateReturn {
     if (!requiredMateriId) return false;
     const required = MATERI_TOKENS[requiredMateriId];
     if (token.trim().toUpperCase() === required?.toUpperCase()) {
-      saveTokenForMateri(requiredMateriId);
       setIsOpen(false);
       setConfirmedPath(pendingPath);
       setPendingPath(null);
