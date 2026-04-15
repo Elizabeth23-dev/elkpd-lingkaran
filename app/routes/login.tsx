@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BookOpen, Eye, EyeOff, LogIn, User, ShieldCheck, UserPlus, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, LogIn, User, ShieldCheck, UserPlus, ArrowLeft } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
 import type { UserRole } from '~/data/auth';
 import styles from './login.module.css';
@@ -100,9 +100,7 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <div className={styles.logo}>
-            <BookOpen size={28} />
-          </div>
+          <div className={styles.logo} />
           <h1 className={styles.title}>E-LKPD Lingkaran</h1>
           <p className={styles.subtitle}>
             {mode === 'login' ? 'Kelas 11 SMA — Masuk ke akun Anda' : 'Daftarkan akun siswa baru'}
