@@ -85,7 +85,12 @@ jobs:
         run: npm run build
 
       - name: Buat 404.html untuk SPA routing
-        run: cp build/client/index.html build/client/404.html
+        run: |
+          if [ -f build/client/__spa-fallback.html ]; then
+            cp build/client/__spa-fallback.html build/client/404.html
+          else
+            cp build/client/index.html build/client/404.html
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -67,11 +67,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 function SpaRedirectHandler() {
   const navigate = useNavigate();
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const redirectPath = params.get("p");
-    if (redirectPath) {
-      const query = params.get("q");
-      navigate("/" + redirectPath + (query ? `?${query}` : ""), { replace: true });
+    // Restore path yang disimpan oleh 404.html
+    const savedPath = sessionStorage.getItem("spa_redirect");
+    if (savedPath && savedPath !== "/") {
+      sessionStorage.removeItem("spa_redirect");
+      navigate(savedPath, { replace: true });
     }
   }, [navigate]);
   return null;
