@@ -1,20 +1,19 @@
 /**
  * Cloud storage service menggunakan JSONBin.io v3.
  * Data siswa disimpan di cloud sehingga bisa diakses dari device manapun.
+ *
+ * Prioritas konfigurasi:
+ * 1. localStorage manual key (set dari halaman /debug-cloud)
+ * 2. import.meta.env.VITE_JSONBIN_* (di-embed saat build)
  */
 
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
 
-const API_KEY = import.meta.env.VITE_JSONBIN_API_KEY as string | undefined ?? '';
-const BIN_ID = import.meta.env.VITE_JSONBIN_BIN_ID as string | undefined ?? '';
-
+const MANUAL_KEY_STORE = 'elkpd-manual-api-key';
+const MANUAL_BIN_STORE = 'elkpd-manual-bin-id';
 const LOCAL_FALLBACK_KEY = 'elkpd-registered-users';
 const CACHE_KEY = 'elkpd-cloud-cache';
-const CACHE_TTL = 30_000; // 30 detik
-
-interface CloudData {
-  users: CloudUser[];
-}
+const CACHE_TTL = 15_000; // 15 detik
 
 export interface CloudUser {
   id: string;
@@ -25,17 +24,54 @@ export interface CloudUser {
   createdAt: number;
 }
 
+interface CloudData {
+  users: CloudUser[];
+}
+
 interface CacheEntry {
   data: CloudUser[];
   ts: number;
 }
 
+/** Ambil API key aktif (manual override > env var) */
+export function getActiveApiKey(): string {
+  try {
+    const manual = localStorage.getItem(MANUAL_KEY_STORE);
+    if (manual) return manual;
+  } catch { /* ignore */ }
+  return (import.meta.env.VITE_JSONBIN_API_KEY as string) ?? '';
+}
+
+/** Ambil BIN ID aktif (manual override > env var) */
+export function getActiveBinId(): string {
+  try {
+    const manual = localStorage.getItem(MANUAL_BIN_STORE);
+    if (manual) return manual;
+  } catch { /* ignore */ }
+  return (import.meta.env.VITE_JSONBIN_BIN_ID as string) ?? '';
+}
+
+/** Simpan API key & BIN ID secara manual (untuk semua device yang buka halaman debug) */
+export function setManualCredentials(apiKey: string, binId: string): void {
+  try {
+    localStorage.setItem(MANUAL_KEY_STORE, apiKey);
+    localStorage.setItem(MANUAL_BIN_STORE, binId);
+    invalidateCache();
+  } catch { /* ignore */ }
+}
+
+/** Hapus manual credentials */
+export function clearManualCredentials(): void {
+  try {
+    localStorage.removeItem(MANUAL_KEY_STORE);
+    localStorage.removeItem(MANUAL_BIN_STORE);
+  } catch { /* ignore */ }
+}
+
 function isConfigured(): boolean {
-  const ok = Boolean(API_KEY && BIN_ID);
-  if (!ok) {
-    console.warn('[cloud-storage] JSONBin tidak dikonfigurasi. API_KEY:', !!API_KEY, 'BIN_ID:', !!BIN_ID);
-  }
-  return ok;
+  const key = getActiveApiKey();
+  const bin = getActiveBinId();
+  return Boolean(key && bin);
 }
 
 function getCache(): CloudUser[] | null {
@@ -71,19 +107,22 @@ export function invalidateCloudCache(): void {
 /** Ambil daftar user dari cloud. Fallback ke localStorage jika tidak terkonfigurasi. */
 export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]> {
   if (!isConfigured()) {
+    console.warn('[cloud-storage] Tidak terkonfigurasi. Pakai localStorage fallback.');
     return getLocalFallback();
   }
 
-  // Pakai cache kecuali diminta bypass
   if (!bypassCache) {
     const cached = getCache();
     if (cached) return cached;
   }
 
+  const apiKey = getActiveApiKey();
+  const binId = getActiveBinId();
+
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
+    const res = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
       headers: {
-        'X-Master-Key': API_KEY,
+        'X-Master-Key': apiKey,
         'X-Bin-Meta': 'false',
         'Cache-Control': 'no-cache',
       },
@@ -95,7 +134,7 @@ export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]>
     setCache(users);
     return users;
   } catch (err) {
-    console.warn('[cloud-storage] Gagal fetch dari cloud, pakai cache/localStorage:', err);
+    console.warn('[cloud-storage] Gagal fetch dari cloud, pakai localStorage:', err);
     return getLocalFallback();
   }
 }
@@ -119,12 +158,15 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
 
   if (!isConfigured()) return;
 
+  const apiKey = getActiveApiKey();
+  const binId = getActiveBinId();
+
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
+    const res = await fetch(`${JSONBIN_BASE}/b/${binId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY,
+        'X-Master-Key': apiKey,
       },
       body: JSON.stringify({ users }),
     });

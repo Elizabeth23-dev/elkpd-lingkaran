@@ -1,8 +1,18 @@
 /**
- * Halaman debug untuk mengecek status koneksi JSONBin
+ * Halaman setup & debug JSONBin.
  * Akses di /debug-cloud
+ * Guru bisa input API key & BIN ID di sini agar tersimpan di localStorage.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import {
+  getActiveApiKey,
+  getActiveBinId,
+  setManualCredentials,
+  clearManualCredentials,
+  fetchCloudUsers,
+  saveCloudUsers,
+  type CloudUser,
+} from '~/data/cloud-storage';
 import styles from './debug-cloud.module.css';
 
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
@@ -15,219 +25,259 @@ interface TestResult {
 }
 
 export function meta() {
-  return [{ title: 'Debug Cloud Storage' }];
+  return [{ title: 'Setup Cloud Storage — E-LKPD' }];
 }
 
 export default function DebugCloudPage() {
   const [results, setResults] = useState<TestResult[]>([]);
   const [running, setRunning] = useState(false);
-  const [manualKey, setManualKey] = useState('');
-  const [manualBin, setManualBin] = useState('');
+  const [inputKey, setInputKey] = useState('');
+  const [inputBin, setInputBin] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [currentKey, setCurrentKey] = useState('');
+  const [currentBin, setCurrentBin] = useState('');
 
-  const apiKey = (import.meta.env.VITE_JSONBIN_API_KEY as string) ?? '';
-  const binId = (import.meta.env.VITE_JSONBIN_BIN_ID as string) ?? '';
+  useEffect(() => {
+    setCurrentKey(getActiveApiKey());
+    setCurrentBin(getActiveBinId());
+  }, []);
 
-  async function runTests(overrideKey?: string, overrideBin?: string) {
-    const key = overrideKey ?? apiKey;
-    const bin = overrideBin ?? binId;
+  function handleSaveCredentials() {
+    const key = inputKey.trim();
+    const bin = inputBin.trim();
+    if (!key || !bin) {
+      alert('API Key dan BIN ID harus diisi');
+      return;
+    }
+    setManualCredentials(key, bin);
+    setCurrentKey(getActiveApiKey());
+    setCurrentBin(getActiveBinId());
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+    setResults([]);
+  }
+
+  function handleClearCredentials() {
+    clearManualCredentials();
+    setCurrentKey(getActiveApiKey());
+    setCurrentBin(getActiveBinId());
+    setInputKey('');
+    setInputBin('');
+    setResults([]);
+  }
+
+  async function runTests() {
+    const key = getActiveApiKey();
+    const bin = getActiveBinId();
     const log: TestResult[] = [];
     setResults([]);
     setRunning(true);
 
-    // Step 1: Cek env vars
+    // Step 1: Cek konfigurasi
     log.push({
-      step: '1. Environment Variables',
+      step: '1. Konfigurasi',
       ok: Boolean(key && bin),
       message: key && bin
-        ? `API Key: ${key.slice(0, 10)}... | BIN ID: ${bin}`
-        : `KOSONG! API Key: "${key}" | BIN ID: "${bin}"`,
+        ? `✅ API Key: ${key.slice(0, 12)}... | BIN ID: ${bin}`
+        : `❌ KOSONG — Masukkan API Key & BIN ID di form di atas`,
     });
     setResults([...log]);
-
-    if (!key || !bin) {
-      setRunning(false);
-      return;
-    }
+    if (!key || !bin) { setRunning(false); return; }
 
     // Step 2: Test fetch BIN
     try {
       const res = await fetch(`${JSONBIN_BASE}/b/${bin}/latest`, {
-        headers: {
-          'X-Master-Key': key,
-          'X-Bin-Meta': 'false',
-          'Cache-Control': 'no-cache',
-        },
+        headers: { 'X-Master-Key': key, 'X-Bin-Meta': 'false', 'Cache-Control': 'no-cache' },
       });
       const text = await res.text();
       let parsed: unknown = null;
       try { parsed = JSON.parse(text); } catch { /* ignore */ }
-
       log.push({
-        step: '2. Fetch BIN dari JSONBin',
+        step: '2. Koneksi ke JSONBin',
         ok: res.ok,
         message: res.ok
-          ? `✅ HTTP ${res.status} — Berhasil fetch data dari BIN`
+          ? `✅ HTTP ${res.status} — Berhasil terhubung ke JSONBin`
           : `❌ HTTP ${res.status} — ${text.slice(0, 200)}`,
         data: parsed,
       });
     } catch (err) {
-      log.push({
-        step: '2. Fetch BIN dari JSONBin',
-        ok: false,
-        message: `❌ Network error: ${String(err)}`,
-      });
+      log.push({ step: '2. Koneksi ke JSONBin', ok: false, message: `❌ Network error: ${String(err)}` });
     }
     setResults([...log]);
 
-    // Step 3: Cek localStorage fallback
+    // Step 3: Fetch users via cloud-storage
+    try {
+      const users = await fetchCloudUsers(true);
+      log.push({
+        step: '3. Data Siswa di JSONBin',
+        ok: true,
+        message: `✅ ${users.length} siswa terdaftar di cloud`,
+        data: users.map((u) => ({ name: u.name, username: u.username, kelas: u.kelas })),
+      });
+    } catch (err) {
+      log.push({ step: '3. Data Siswa', ok: false, message: `❌ Error: ${String(err)}` });
+    }
+    setResults([...log]);
+
+    // Step 4: localStorage backup
     try {
       const raw = localStorage.getItem('elkpd-registered-users');
-      const users = raw ? JSON.parse(raw) as unknown[] : [];
+      const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
       log.push({
-        step: '3. Data di localStorage (fallback)',
+        step: '4. Backup localStorage (browser ini)',
         ok: true,
-        message: `${users.length} user tersimpan di localStorage browser ini`,
-        data: users,
+        message: `${users.length} siswa di localStorage browser ini`,
+        data: users.map((u) => ({ name: u.name, username: u.username })),
       });
     } catch {
-      log.push({ step: '3. localStorage', ok: false, message: 'Error membaca localStorage' });
+      log.push({ step: '4. localStorage', ok: false, message: 'Error membaca localStorage' });
     }
     setResults([...log]);
-
-    // Step 4: Cek cache
-    try {
-      const raw = localStorage.getItem('elkpd-cloud-cache');
-      if (raw) {
-        const entry = JSON.parse(raw) as { data: unknown[]; ts: number };
-        const age = Math.round((Date.now() - entry.ts) / 1000);
-        log.push({
-          step: '4. Cache JSONBin di localStorage',
-          ok: true,
-          message: `Cache berumur ${age}s — ${entry.data.length} user`,
-          data: entry.data,
-        });
-      } else {
-        log.push({ step: '4. Cache', ok: true, message: 'Tidak ada cache tersimpan' });
-      }
-    } catch {
-      log.push({ step: '4. Cache', ok: false, message: 'Error membaca cache' });
-    }
-    setResults([...log]);
-
     setRunning(false);
   }
 
   async function handleMigrate() {
-    const key = manualKey || apiKey;
-    const bin = manualBin || binId;
-    if (!key || !bin) {
-      alert('Masukkan API Key dan BIN ID terlebih dahulu');
-      return;
-    }
+    const key = getActiveApiKey();
+    const bin = getActiveBinId();
+    if (!key || !bin) { alert('Konfigurasi API Key & BIN ID terlebih dahulu'); return; }
 
-    // Ambil data dari localStorage
     const raw = localStorage.getItem('elkpd-registered-users');
-    const users = raw ? JSON.parse(raw) as unknown[] : [];
-    if (users.length === 0) {
-      alert('Tidak ada data di localStorage untuk di-migrate');
-      return;
-    }
+    const users: CloudUser[] = raw ? (JSON.parse(raw) as CloudUser[]) : [];
+    if (users.length === 0) { alert('Tidak ada data siswa di localStorage browser ini'); return; }
+
+    if (!confirm(`Migrate ${users.length} siswa dari localStorage ke JSONBin?`)) return;
 
     try {
-      const res = await fetch(`${JSONBIN_BASE}/b/${bin}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': key,
-        },
-        body: JSON.stringify({ users }),
-      });
-      if (res.ok) {
-        alert(`✅ Berhasil migrate ${users.length} user ke JSONBin!`);
-        void runTests(key, bin);
-      } else {
-        const txt = await res.text();
-        alert(`❌ Gagal: HTTP ${res.status} — ${txt}`);
+      // Merge dengan data cloud yang ada
+      const cloudUsers = await fetchCloudUsers(true);
+      const merged = [...cloudUsers];
+      for (const u of users) {
+        if (!merged.some((c) => c.username === u.username)) {
+          merged.push(u);
+        }
       }
+      await saveCloudUsers(merged);
+      alert(`✅ Berhasil migrate! Total ${merged.length} siswa di JSONBin.`);
+      void runTests();
     } catch (err) {
-      alert(`❌ Network error: ${String(err)}`);
+      alert(`❌ Gagal migrate: ${String(err)}`);
     }
   }
+
+  const isReady = Boolean(currentKey && currentBin);
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <h1 className={styles.title}>🔧 Debug Cloud Storage</h1>
-        <p className={styles.subtitle}>Halaman ini hanya untuk diagnosa. Jangan dibagikan ke siswa.</p>
+        <h1 className={styles.title}>⚙️ Setup Sinkronisasi Cloud</h1>
+        <p className={styles.subtitle}>
+          Masukkan API Key dan BIN ID JSONBin agar data siswa tersinkron di semua device.
+          Lakukan ini <strong>di setiap browser/device</strong> yang digunakan.
+        </p>
 
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Konfigurasi Saat Ini</h2>
+        {/* Status saat ini */}
+        <div className={`${styles.card} ${isReady ? styles.cardSuccess : styles.cardWarning}`}>
+          <h2 className={styles.cardTitle}>
+            {isReady ? '✅ Konfigurasi Aktif' : '⚠️ Belum Dikonfigurasi'}
+          </h2>
           <div className={styles.configRow}>
-            <span className={styles.configLabel}>API Key (embed):</span>
+            <span className={styles.configLabel}>API Key:</span>
             <code className={styles.configValue}>
-              {apiKey ? `${apiKey.slice(0, 12)}...` : '❌ KOSONG'}
+              {currentKey ? `${currentKey.slice(0, 15)}...` : '❌ KOSONG'}
             </code>
           </div>
           <div className={styles.configRow}>
-            <span className={styles.configLabel}>BIN ID (embed):</span>
-            <code className={styles.configValue}>{binId || '❌ KOSONG'}</code>
+            <span className={styles.configLabel}>BIN ID:</span>
+            <code className={styles.configValue}>{currentBin || '❌ KOSONG'}</code>
           </div>
-          <button
-            className={styles.btnPrimary}
-            onClick={() => void runTests()}
-            disabled={running}
-          >
-            {running ? '⏳ Testing...' : '▶ Jalankan Test'}
-          </button>
+          {isReady && (
+            <button className={styles.btnDanger} onClick={handleClearCredentials}>
+              🗑️ Hapus Konfigurasi
+            </button>
+          )}
         </div>
 
-        {results.length > 0 && (
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Hasil Test</h2>
-            {results.map((r, i) => (
-              <div key={i} className={`${styles.resultRow} ${r.ok ? styles.resultOk : styles.resultFail}`}>
-                <div className={styles.resultStep}>{r.step}</div>
-                <div className={styles.resultMsg}>{r.message}</div>
-                {r.data !== undefined && (
-                  <pre className={styles.resultData}>
-                    {JSON.stringify(r.data, null, 2)}
-                  </pre>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
+        {/* Form input credentials */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>🔄 Migrate Data localStorage → JSONBin</h2>
+          <h2 className={styles.cardTitle}>🔑 Input API Key & BIN ID</h2>
           <p className={styles.helpText}>
-            Jika data siswa sudah ada di HP (localStorage) tapi belum masuk JSONBin,
-            gunakan ini untuk memindahkan datanya.
+            Dapatkan dari <strong>jsonbin.io</strong> → login → Account → Master Key &amp; Bins.
+            Simpan di browser ini agar tersinkron.
           </p>
           <div className={styles.inputRow}>
-            <label className={styles.inputLabel}>Override API Key (opsional):</label>
+            <label className={styles.inputLabel}>Master Key (API Key):</label>
             <input
               className={styles.input}
               type="text"
               placeholder="$2a$10$..."
-              value={manualKey}
-              onChange={(e) => setManualKey(e.target.value)}
+              value={inputKey}
+              onChange={(e) => setInputKey(e.target.value)}
             />
           </div>
           <div className={styles.inputRow}>
-            <label className={styles.inputLabel}>Override BIN ID (opsional):</label>
+            <label className={styles.inputLabel}>BIN ID:</label>
             <input
               className={styles.input}
               type="text"
-              placeholder="69dfa7b1..."
-              value={manualBin}
-              onChange={(e) => setManualBin(e.target.value)}
+              placeholder="6xxxxxxxxxxxxxxxxxxxxxxx"
+              value={inputBin}
+              onChange={(e) => setInputBin(e.target.value)}
             />
           </div>
-          <button className={styles.btnWarning} onClick={() => void handleMigrate()}>
-            📤 Migrate Data ke JSONBin
+          <div className={styles.btnRow}>
+            <button className={styles.btnPrimary} onClick={handleSaveCredentials}>
+              {saved ? '✅ Tersimpan!' : '💾 Simpan Konfigurasi'}
+            </button>
+          </div>
+        </div>
+
+        {/* Test koneksi */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>🧪 Test Koneksi</h2>
+          <button
+            className={styles.btnPrimary}
+            onClick={() => void runTests()}
+            disabled={running || !isReady}
+          >
+            {running ? '⏳ Testing...' : '▶ Jalankan Test'}
+          </button>
+          {!isReady && <p className={styles.helpText}>Simpan konfigurasi terlebih dahulu.</p>}
+
+          {results.length > 0 && (
+            <div className={styles.resultList}>
+              {results.map((r, i) => (
+                <div key={i} className={`${styles.resultRow} ${r.ok ? styles.resultOk : styles.resultFail}`}>
+                  <div className={styles.resultStep}>{r.step}</div>
+                  <div className={styles.resultMsg}>{r.message}</div>
+                  {r.data !== undefined && (
+                    <pre className={styles.resultData}>{JSON.stringify(r.data, null, 2)}</pre>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Migrate data */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>📤 Migrate Data ke Cloud</h2>
+          <p className={styles.helpText}>
+            Jika ada data siswa di browser/HP ini (localStorage) yang belum masuk JSONBin,
+            klik tombol ini untuk memindahkannya ke cloud.
+          </p>
+          <button
+            className={styles.btnWarning}
+            onClick={() => void handleMigrate()}
+            disabled={!isReady}
+          >
+            📤 Migrate Data localStorage → JSONBin
           </button>
         </div>
+
+        <p className={styles.note}>
+          💡 <strong>Tips:</strong> Buka halaman ini di HP yang berisi data siswa, lalu klik Migrate.
+          Setelah itu, halaman admin akan otomatis sinkron dari JSONBin.
+        </p>
       </div>
     </div>
   );
