@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { soalPerTopik } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 
-const WAKTU_AWAL = 10 * 60; // 10 menit
+/** Waktu per soal dalam detik (2 menit) */
+const WAKTU_PER_SOAL = 2 * 60;
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
@@ -17,8 +18,9 @@ export function useLatihan(topicId: string) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState<Record<number, boolean>>({});
-  const [timeLeft, setTimeLeft] = useState(WAKTU_AWAL);
+  const [timeLeft, setTimeLeft] = useState(WAKTU_PER_SOAL);
   const [isFinished, setIsFinished] = useState(false);
+  const totalTimeRef = useRef(0);
 
   // Reset semua state dan hapus data hasil lama saat masuk halaman latihan
   useEffect(() => {
@@ -26,19 +28,28 @@ export function useLatihan(topicId: string) {
     setCurrentIndex(0);
     setAnswers({});
     setSubmitted({});
-    setTimeLeft(WAKTU_AWAL);
+    setTimeLeft(WAKTU_PER_SOAL);
     setIsFinished(false);
+    totalTimeRef.current = 0;
   }, [topicId, user]);
 
+  // Reset timer saat pindah soal
+  useEffect(() => {
+    setTimeLeft(WAKTU_PER_SOAL);
+  }, [currentIndex]);
+
+  // Countdown timer — auto-submit soal jika waktu habis
   useEffect(() => {
     if (isFinished) return;
     if (timeLeft <= 0) {
-      handleSelesai();
+      // Tandai soal sebagai submitted (waktu habis, tanpa jawaban jika belum dipilih)
+      setSubmitted((prev) => ({ ...prev, [currentIndex]: true }));
+      totalTimeRef.current += WAKTU_PER_SOAL;
       return;
     }
     const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isFinished]);
+  }, [timeLeft, isFinished, currentIndex]);
 
   const currentSoal = soalList[currentIndex];
   const selectedAnswer = answers[currentIndex] ?? null;
@@ -51,8 +62,9 @@ export function useLatihan(topicId: string) {
 
   const handleSubmit = useCallback(() => {
     if (answers[currentIndex] === undefined) return;
+    totalTimeRef.current += WAKTU_PER_SOAL - timeLeft;
     setSubmitted((prev) => ({ ...prev, [currentIndex]: true }));
-  }, [currentIndex, answers]);
+  }, [currentIndex, answers, timeLeft]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < soalList.length - 1) {
@@ -76,11 +88,11 @@ export function useLatihan(topicId: string) {
       submitted,
       score,
       total: soalList.length,
-      timeTaken: WAKTU_AWAL - timeLeft,
+      timeTaken: totalTimeRef.current,
     };
     if (user) sessionStorage.setItem(hasilKey(user.id, topicId), JSON.stringify(resultData));
     navigate(`/hasil/${topicId}`);
-  }, [topicId, answers, submitted, soalList, timeLeft, navigate, user]);
+  }, [topicId, answers, submitted, soalList, navigate, user]);
 
   return {
     soalList,
