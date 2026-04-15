@@ -71,7 +71,7 @@ function SpaRedirectHandler() {
     const redirectPath = params.get("p");
     if (redirectPath) {
       const query = params.get("q");
-      navigate(redirectPath + (query ? `?${query}` : ""), { replace: true });
+      navigate("/" + redirectPath + (query ? `?${query}` : ""), { replace: true });
     }
   }, [navigate]);
   return null;

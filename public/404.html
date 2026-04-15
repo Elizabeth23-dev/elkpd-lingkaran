@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>E-LKPD Lingkaran</title>
+    <script>
+      // GitHub Pages SPA redirect trick
+      // Simpan path asli ke sessionStorage, lalu redirect ke index.html
+      var l = window.location;
+      var path = l.pathname;
+      var search = l.search;
+      var hash = l.hash;
+      // Redirect ke root dengan path di-encode sebagai query param
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1).join('/') +
+        '/?p=' + encodeURIComponent(path.slice(1)) +
+        (search ? '&q=' + encodeURIComponent(search.slice(1)) : '') +
+        hash
+      );
+    </script>
+  </head>
+  <body>
+    Mengalihkan...
+  </body>
+</html>
