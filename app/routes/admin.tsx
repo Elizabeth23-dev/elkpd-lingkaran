@@ -36,10 +36,10 @@ export default function AdminPage() {
   const [siswaList, setSiswaList] = useState<User[]>([]);
   const [loadingSiswa, setLoadingSiswa] = useState(false);
 
-  const refreshSiswaList = useCallback(async () => {
+  const refreshSiswaList = useCallback(async (bypass = false) => {
     setLoadingSiswa(true);
     try {
-      const all = await getDaftarAkunAsync();
+      const all = await getDaftarAkunAsync(bypass);
       setSiswaList(all.filter((u) => u.role === 'siswa'));
     } catch {
       // fallback sudah ditangani di getDaftarAkunAsync
@@ -48,11 +48,19 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Refresh list saat halaman dimuat & saat localStorage berubah (siswa baru mendaftar di tab lain)
+  // Refresh list saat halaman dimuat (bypass cache), auto-refresh setiap 30 detik, dan saat localStorage berubah
   useEffect(() => {
-    void refreshSiswaList();
-    window.addEventListener('storage', () => void refreshSiswaList());
-    return () => window.removeEventListener('storage', () => void refreshSiswaList());
+    void refreshSiswaList(true);
+
+    const interval = setInterval(() => void refreshSiswaList(true), 30_000);
+
+    const onStorage = () => void refreshSiswaList(true);
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', onStorage);
+    };
   }, [refreshSiswaList]);
 
   const handleResetNilai = useCallback((siswaId: string) => {
@@ -171,7 +179,7 @@ export default function AdminPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Users size={20} /> Rekap Nilai Siswa
-            <button className={styles.refreshBtn} onClick={() => void refreshSiswaList()} title="Muat ulang daftar siswa" disabled={loadingSiswa}>
+            <button className={styles.refreshBtn} onClick={() => void refreshSiswaList(true)} title="Muat ulang daftar siswa" disabled={loadingSiswa}>
               <RotateCcw size={14} className={loadingSiswa ? styles.spinning : undefined} />
               {loadingSiswa ? 'Memuat...' : 'Refresh'}
             </button>

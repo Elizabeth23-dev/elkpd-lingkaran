@@ -47,8 +47,8 @@ function cloudUserToUser(cu: CloudUser): User {
 }
 
 /** Seluruh akun (default + yang didaftarkan dari cloud) */
-export async function getDaftarAkunAsync(): Promise<User[]> {
-  const cloudUsers = await fetchCloudUsers();
+export async function getDaftarAkunAsync(bypassCache = false): Promise<User[]> {
+  const cloudUsers = await fetchCloudUsers(bypassCache);
   return [...defaultAkun, ...cloudUsers.map(cloudUserToUser)];
 }
 

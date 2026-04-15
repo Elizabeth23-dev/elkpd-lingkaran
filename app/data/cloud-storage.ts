@@ -18,7 +18,7 @@ const BIN_ID = (typeof window !== 'undefined' ? (window as any).__ELKPD_JSONBIN_
 
 const LOCAL_FALLBACK_KEY = 'elkpd-registered-users';
 const CACHE_KEY = 'elkpd-cloud-cache';
-const CACHE_TTL = 60_000; // 60 detik
+const CACHE_TTL = 30_000; // 30 detik
 
 interface CloudData {
   users: CloudUser[];
@@ -73,7 +73,7 @@ export function invalidateCloudCache(): void {
 }
 
 /** Ambil daftar user dari cloud. Fallback ke localStorage jika tidak terkonfigurasi. */
-export async function fetchCloudUsers(): Promise<CloudUser[]> {
+export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]> {
   if (!isConfigured()) {
     // Fallback: baca dari localStorage (antar-tab di device yang sama)
     try {
@@ -84,15 +84,18 @@ export async function fetchCloudUsers(): Promise<CloudUser[]> {
     }
   }
 
-  // Pakai cache dulu
-  const cached = getCache();
-  if (cached) return cached;
+  // Pakai cache kecuali diminta bypass
+  if (!bypassCache) {
+    const cached = getCache();
+    if (cached) return cached;
+  }
 
   try {
     const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
       headers: {
         'X-Master-Key': API_KEY,
         'X-Bin-Meta': 'false',
+        'Cache-Control': 'no-cache',
       },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
