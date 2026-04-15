@@ -7,4 +7,5 @@ export default [
   route("/materi/:topicId", "routes/materi-pembelajaran.tsx"),
   route("/latihan/:topicId", "routes/soal-latihan.tsx"),
   route("/hasil/:topicId", "routes/hasil-evaluasi.tsx"),
+  route("/debug-cloud", "routes/debug-cloud.tsx"),
 ] satisfies RouteConfig;
