@@ -10,6 +10,40 @@ export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
 }
 
+/** Key untuk menyimpan progress latihan yang sedang berlangsung */
+function progressKey(siswaId: string, topicId: string) {
+  return `progress-${siswaId}-${topicId}`;
+}
+
+interface ProgressData {
+  currentIndex: number;
+  answers: Record<number, number>;
+  submitted: Record<number, boolean>;
+  essayImages: Record<number, string>;
+  startTime: number;
+}
+
+function loadProgress(siswaId: string, topicId: string): ProgressData | null {
+  try {
+    const raw = sessionStorage.getItem(progressKey(siswaId, topicId));
+    return raw ? (JSON.parse(raw) as ProgressData) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveProgress(siswaId: string, topicId: string, data: ProgressData) {
+  try {
+    sessionStorage.setItem(progressKey(siswaId, topicId), JSON.stringify(data));
+  } catch { /* ignore */ }
+}
+
+function clearProgress(siswaId: string, topicId: string) {
+  try {
+    sessionStorage.removeItem(progressKey(siswaId, topicId));
+  } catch { /* ignore */ }
+}
+
 /** Cek apakah siswa sudah menyelesaikan latihan untuk topik ini */
 export function sudahSelesai(siswaId: string, topicId: string): boolean {
   try {
@@ -24,38 +58,73 @@ export function useLatihan(topicId: string) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Ambil soal dan batasi ke 15 soal
   const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
   const soalList = allSoal.slice(0, MAX_SOAL);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitted, setSubmitted] = useState<Record<number, boolean>>({});
-  /** Base64 gambar untuk soal berpikir-kritis, keyed by soal index */
-  const [essayImages, setEssayImages] = useState<Record<number, string>>({});
+  // Inisialisasi state dari progress yang tersimpan (jika ada)
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (!user) return 0;
+    return loadProgress(user.id, topicId)?.currentIndex ?? 0;
+  });
+  const [answers, setAnswers] = useState<Record<number, number>>(() => {
+    if (!user) return {};
+    return loadProgress(user.id, topicId)?.answers ?? {};
+  });
+  const [submitted, setSubmitted] = useState<Record<number, boolean>>(() => {
+    if (!user) return {};
+    return loadProgress(user.id, topicId)?.submitted ?? {};
+  });
+  const [essayImages, setEssayImages] = useState<Record<number, string>>(() => {
+    if (!user) return {};
+    return loadProgress(user.id, topicId)?.essayImages ?? {};
+  });
   /** Timer per soal — diinisialisasi dari waktu soal saat ini */
-  const [soalTimeLeft, setSoalTimeLeft] = useState(soalList[0]?.waktu ?? 90);
+  const [soalTimeLeft, setSoalTimeLeft] = useState(() => {
+    const savedIndex = user ? (loadProgress(user.id, topicId)?.currentIndex ?? 0) : 0;
+    return soalList[savedIndex]?.waktu ?? 90;
+  });
   const [isFinished, setIsFinished] = useState(false);
-  const startTimeRef = useRef(Date.now());
+  const startTimeRef = useRef<number>(
+    user ? (loadProgress(user.id, topicId)?.startTime ?? Date.now()) : Date.now()
+  );
   /** Ref untuk menyimpan soalList agar dapat diakses di closure timer */
   const soalListRef = useRef(soalList);
   soalListRef.current = soalList;
 
-  // Jika siswa sudah mengerjakan latihan ini, redirect ke halaman hasil
+  // Jika siswa sudah menyelesaikan latihan ini, redirect ke halaman hasil
+  // Hanya reset state jika topicId benar-benar berubah (bukan saat kembali dari materi)
+  const initializedTopicRef = useRef<string | null>(null);
   useEffect(() => {
-    if (user && user.role === 'siswa' && sudahSelesai(user.id, topicId)) {
+    if (!user) return;
+    if (user.role === 'siswa' && sudahSelesai(user.id, topicId)) {
       navigate(`/hasil/${topicId}`, { replace: true });
       return;
     }
-    setCurrentIndex(0);
-    setAnswers({});
-    setSubmitted({});
-    setEssayImages({});
-    setSoalTimeLeft(soalList[0]?.waktu ?? 90);
-    setIsFinished(false);
-    startTimeRef.current = Date.now();
+    // Hanya reset jika topicId berubah (bukan re-render biasa)
+    if (initializedTopicRef.current === topicId) return;
+    initializedTopicRef.current = topicId;
+
+    const saved = loadProgress(user.id, topicId);
+    if (saved) {
+      // Restore dari progress tersimpan
+      setCurrentIndex(saved.currentIndex);
+      setAnswers(saved.answers);
+      setSubmitted(saved.submitted);
+      setEssayImages(saved.essayImages);
+      setSoalTimeLeft(soalList[saved.currentIndex]?.waktu ?? 90);
+      startTimeRef.current = saved.startTime;
+    } else {
+      // Mulai sesi baru
+      setCurrentIndex(0);
+      setAnswers({});
+      setSubmitted({});
+      setEssayImages({});
+      setSoalTimeLeft(soalList[0]?.waktu ?? 90);
+      setIsFinished(false);
+      startTimeRef.current = Date.now();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topicId, user, navigate]);
+  }, [topicId, user]);
 
   // Reset timer setiap ganti soal
   useEffect(() => {
@@ -63,6 +132,19 @@ export function useLatihan(topicId: string) {
     setSoalTimeLeft(waktuSoal);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
+
+  // Simpan progress ke sessionStorage setiap kali state penting berubah
+  useEffect(() => {
+    if (!user || isFinished) return;
+    saveProgress(user.id, topicId, {
+      currentIndex,
+      answers,
+      submitted,
+      essayImages,
+      startTime: startTimeRef.current,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, answers, submitted, essayImages, isFinished]);
 
   // Countdown per soal — ketika habis, otomatis pindah ke soal berikutnya atau selesai
   useEffect(() => {
@@ -126,6 +208,7 @@ export function useLatihan(topicId: string) {
 
   const handleSelesai = useCallback(() => {
     setIsFinished(true);
+    if (user) clearProgress(user.id, topicId);
 
     const timeTaken = Math.round((Date.now() - startTimeRef.current) / 1000);
 
