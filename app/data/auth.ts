@@ -70,6 +70,22 @@ const defaultAkun: User[] = [
     role: 'siswa',
     kelas: 'XI 1',
   },
+  {
+    id: 'kelompok-007',
+    name: 'Kelompok 7',
+    username: 'Kelompok 7',
+    password: 'xcnk23#',
+    role: 'siswa',
+    kelas: 'XI 1',
+  },
+  {
+    id: 'kelompok-008',
+    name: 'Kelompok 8',
+    username: 'Kelompok 8',
+    password: 'jdsk32#',
+    role: 'siswa',
+    kelas: 'XI 1',
+  },
 ];
 
 /** Untuk kompatibilitas komponen yang sudah pakai `daftarAkun` langsung */

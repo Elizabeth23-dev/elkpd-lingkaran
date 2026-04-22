@@ -1,4 +1,4 @@
-import { Award, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Award, Clock, CheckCircle2, XCircle, Star } from "lucide-react";
 import classnames from "classnames";
 import type { HasilData } from "~/hooks/use-hasil";
 import { daftarMateri } from "~/data/materi";
@@ -10,8 +10,12 @@ export interface RingkasanSkorProps {
 }
 
 export function RingkasanSkor({ className, hasil }: RingkasanSkorProps) {
-  const { score, total, timeTaken } = hasil;
-  const percentage = Math.round((score / total) * 100);
+  const { score, total, timeTaken, totalSkor, skorDiperoleh } = hasil;
+  const effectiveTotalSkor = totalSkor || total * 5;
+  const effectiveSkorDiperoleh = skorDiperoleh ?? score * 5;
+  const percentage = effectiveTotalSkor > 0
+    ? Math.round((effectiveSkorDiperoleh / effectiveTotalSkor) * 100)
+    : 0;
   const materi = daftarMateri.find((m) => m.id === hasil.topicId) ?? daftarMateri[0];
 
   const getLevelInfo = () => {
@@ -34,7 +38,7 @@ export function RingkasanSkor({ className, hasil }: RingkasanSkorProps) {
           <div className={classnames(styles.scoreCircle, styles[`scoreCircle_${level.color}`])}>
             <span className={styles.scoreEmoji}>{level.emoji}</span>
             <span className={styles.scoreNum}>{percentage}%</span>
-            <span className={styles.scoreLabel}>Skor Anda</span>
+            <span className={styles.scoreLabel}>Nilai Akhir</span>
           </div>
           <div className={styles.heroInfo}>
             <h1 className={styles.title}>Hasil Latihan</h1>
@@ -62,9 +66,14 @@ export function RingkasanSkor({ className, hasil }: RingkasanSkorProps) {
             <div className={styles.statLabel}>Jawaban Salah</div>
           </div>
           <div className={styles.statBox}>
+            <Star size={24} className={styles.statIconBlue} />
+            <div className={styles.statNum}>{effectiveSkorDiperoleh}</div>
+            <div className={styles.statLabel}>Skor Diperoleh</div>
+          </div>
+          <div className={styles.statBox}>
             <Award size={24} className={styles.statIconBlue} />
-            <div className={styles.statNum}>{score * 20}</div>
-            <div className={styles.statLabel}>Poin Diperoleh</div>
+            <div className={styles.statNum}>{effectiveTotalSkor}</div>
+            <div className={styles.statLabel}>Skor Maksimal</div>
           </div>
           <div className={styles.statBox}>
             <Clock size={24} className={styles.statIconGray} />

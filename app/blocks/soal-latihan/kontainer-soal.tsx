@@ -43,9 +43,12 @@ export function KontainerSoal({
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <div className={styles.soalNum}>Soal {soalNumber}</div>
-            <span className={classnames(styles.kesulitan, styles[`kesulitan_${kesulitan.color}`])}>
-              {kesulitan.label}
-            </span>
+            <div className={styles.badges}>
+              <span className={classnames(styles.kesulitan, styles[`kesulitan_${kesulitan.color}`])}>
+                {kesulitan.label}
+              </span>
+              <span className={styles.skor}>+{soal.skor} poin</span>
+            </div>
           </div>
 
           <p className={styles.pertanyaan}>{soal.pertanyaan}</p>

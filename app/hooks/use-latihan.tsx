@@ -3,9 +3,6 @@ import { useNavigate } from "react-router";
 import { soalPerTopik } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 
-/** Waktu per soal dalam detik (2 menit) */
-const WAKTU_PER_SOAL = 2 * 60;
-
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
 }
@@ -28,9 +25,13 @@ export function useLatihan(topicId: string) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState<Record<number, boolean>>({});
-  const [timeLeft, setTimeLeft] = useState(WAKTU_PER_SOAL);
+  /** Base64 gambar untuk soal berpikir-kritis, keyed by soal index */
+  const [essayImages, setEssayImages] = useState<Record<number, string>>({});
+  const [timeLeft, setTimeLeft] = useState(soalList[0]?.waktu ?? 120);
   const [isFinished, setIsFinished] = useState(false);
   const totalTimeRef = useRef(0);
+
+  const currentWaktu = soalList[currentIndex]?.waktu ?? 120;
 
   // Jika siswa sudah mengerjakan latihan ini, redirect ke halaman hasil
   useEffect(() => {
@@ -41,43 +42,55 @@ export function useLatihan(topicId: string) {
     setCurrentIndex(0);
     setAnswers({});
     setSubmitted({});
-    setTimeLeft(WAKTU_PER_SOAL);
+    setEssayImages({});
+    setTimeLeft(soalList[0]?.waktu ?? 120);
     setIsFinished(false);
     totalTimeRef.current = 0;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId, user, navigate]);
 
   // Reset timer saat pindah soal
   useEffect(() => {
-    setTimeLeft(WAKTU_PER_SOAL);
-  }, [currentIndex]);
+    setTimeLeft(currentWaktu);
+  }, [currentIndex, currentWaktu]);
 
   // Countdown timer — auto-submit soal jika waktu habis
   useEffect(() => {
     if (isFinished) return;
     if (timeLeft <= 0) {
-      // Tandai soal sebagai submitted (waktu habis, tanpa jawaban jika belum dipilih)
       setSubmitted((prev) => ({ ...prev, [currentIndex]: true }));
-      totalTimeRef.current += WAKTU_PER_SOAL;
+      totalTimeRef.current += currentWaktu;
       return;
     }
     const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isFinished, currentIndex]);
+  }, [timeLeft, isFinished, currentIndex, currentWaktu]);
 
   const currentSoal = soalList[currentIndex];
   const selectedAnswer = answers[currentIndex] ?? null;
   const isSubmitted = submitted[currentIndex] ?? false;
+  const currentEssayImage = essayImages[currentIndex] ?? null;
 
   const handleSelectAnswer = useCallback((idx: number) => {
     if (submitted[currentIndex]) return;
     setAnswers((prev) => ({ ...prev, [currentIndex]: idx }));
   }, [currentIndex, submitted]);
 
+  const handleEssayImageUpload = useCallback((base64: string) => {
+    setEssayImages((prev) => ({ ...prev, [currentIndex]: base64 }));
+  }, [currentIndex]);
+
   const handleSubmit = useCallback(() => {
-    if (answers[currentIndex] === undefined) return;
-    totalTimeRef.current += WAKTU_PER_SOAL - timeLeft;
+    const soal = soalList[currentIndex];
+    if (soal.tipe === 'berpikir-kritis') {
+      // Essay dianggap submitted saat ada gambar atau setelah waktu habis
+      if (!essayImages[currentIndex]) return;
+    } else {
+      if (answers[currentIndex] === undefined) return;
+    }
+    totalTimeRef.current += currentWaktu - timeLeft;
     setSubmitted((prev) => ({ ...prev, [currentIndex]: true }));
-  }, [currentIndex, answers, timeLeft]);
+  }, [currentIndex, answers, timeLeft, soalList, essayImages, currentWaktu]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < soalList.length - 1) {
@@ -91,21 +104,39 @@ export function useLatihan(topicId: string) {
 
   const handleSelesai = useCallback(() => {
     setIsFinished(true);
-    const score = soalList.reduce((acc, soal, idx) => {
-      if (answers[idx] === soal.jawabanBenar) return acc + 1;
-      return acc;
-    }, 0);
+
+    // Hitung skor berbobot berdasarkan kesulitan
+    const { score, totalSkor, skorDiperoleh } = soalList.reduce(
+      (acc, soal, idx) => {
+        acc.totalSkor += soal.skor;
+        if (soal.tipe === 'berpikir-kritis') {
+          // Essay: skor penuh jika ada gambar yang diupload
+          if (essayImages[idx]) acc.skorDiperoleh += soal.skor;
+        } else {
+          if (answers[idx] === soal.jawabanBenar) {
+            acc.skorDiperoleh += soal.skor;
+            acc.score += 1;
+          }
+        }
+        return acc;
+      },
+      { score: 0, totalSkor: 0, skorDiperoleh: 0 }
+    );
+
     const resultData = {
       topicId,
       answers,
       submitted,
+      essayImages,
       score,
       total: soalList.length,
+      totalSkor,
+      skorDiperoleh,
       timeTaken: totalTimeRef.current,
     };
     if (user) sessionStorage.setItem(hasilKey(user.id, topicId), JSON.stringify(resultData));
     navigate(`/hasil/${topicId}`);
-  }, [topicId, answers, submitted, soalList, navigate, user]);
+  }, [topicId, answers, submitted, essayImages, soalList, navigate, user]);
 
   return {
     soalList,
@@ -114,7 +145,9 @@ export function useLatihan(topicId: string) {
     selectedAnswer,
     isSubmitted,
     timeLeft,
+    currentEssayImage,
     handleSelectAnswer,
+    handleEssayImageUpload,
     handleSubmit,
     handleNext,
     handlePrev,

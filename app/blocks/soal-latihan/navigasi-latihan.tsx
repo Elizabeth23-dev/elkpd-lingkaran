@@ -10,6 +10,8 @@ export interface NavigasiLatihanProps {
   totalSoal: number;
   selectedAnswer: number | null;
   isSubmitted: boolean;
+  isEssay?: boolean;
+  essayImageUploaded?: boolean;
   onPrev: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -23,12 +25,15 @@ export function NavigasiLatihan({
   totalSoal,
   selectedAnswer,
   isSubmitted,
+  isEssay = false,
+  essayImageUploaded = false,
   onPrev,
   onNext,
   onSubmit,
   onSelesai,
 }: NavigasiLatihanProps) {
   const isLast = currentIndex === totalSoal - 1;
+  const canSubmit = isEssay ? essayImageUploaded : selectedAnswer !== null;
 
   return (
     <div className={classnames(styles.root, className)}>
@@ -48,10 +53,10 @@ export function NavigasiLatihan({
             {!isSubmitted ? (
               <button
                 onClick={onSubmit}
-                disabled={selectedAnswer === null}
+                disabled={!canSubmit}
                 className={styles.submitBtn}
               >
-                Cek Jawaban
+                {isEssay ? 'Kumpulkan Jawaban' : 'Cek Jawaban'}
               </button>
             ) : isLast ? (
               <button onClick={onSelesai} className={styles.selesaiBtn}>

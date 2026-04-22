@@ -6,8 +6,11 @@ export interface HasilData {
   topicId: string;
   answers: Record<number, number>;
   submitted: Record<number, boolean>;
+  essayImages?: Record<number, string>;
   score: number;
   total: number;
+  totalSkor: number;
+  skorDiperoleh: number;
   timeTaken: number;
 }
 
