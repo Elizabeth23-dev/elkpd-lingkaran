@@ -72,7 +72,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Busur minor adalah bagian busur lingkaran yang lebih kecil (kurang dari setengah keliling), sedangkan busur mayor adalah bagian yang lebih besar.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 2,
@@ -83,7 +83,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Sudut keliling = ½ × sudut pusat = ½ × 100° = 50°. Sudut keliling selalu setengah dari sudut pusat yang menghadap busur yang sama.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 3,
@@ -94,7 +94,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Sudut pusat = 2 × sudut keliling = 2 × 35° = 70°. Sudut pusat selalu dua kali sudut keliling yang menghadap busur yang sama.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 4,
@@ -105,7 +105,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Panjang busur = (α/360°) × 2πr = (120/360) × 2 × (22/7) × 21 = (1/3) × 132 = 44 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 5,
@@ -116,7 +116,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Semua sudut keliling yang menghadap busur yang sama akan selalu memiliki besar yang sama, yaitu setengah dari sudut pusat yang menghadap busur tersebut.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 6,
@@ -127,7 +127,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Sudut keliling yang menghadap diameter (busur setengah lingkaran = 180°) selalu bernilai 90°, karena sudut keliling = ½ × sudut pusat = ½ × 180° = 90°.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 7,
@@ -138,7 +138,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Luas juring = (α/360°) × πr² = (90/360) × (22/7) × 14² = (1/4) × (22/7) × 196 = (1/4) × 616 = 154 cm².',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 8,
@@ -149,7 +149,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Panjang busur = (150/360) × 2 × (22/7) × 28 = (5/12) × 176 = 880/12 ≈ 73,33 cm. Jawaban terdekat adalah 73,33 cm. Namun dengan pembulatan: (5/12) × 176 = 73,3 cm. Pilihan 70 cm lebih tepat karena (150/360) × 2 × (22/7) × 28 = (5/12) × 176 = 73,3 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 9,
@@ -160,7 +160,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Sudut keliling yang menghadap busur besar = ½ × (360° - 60°) = ½ × 300° = 150°. Atau menggunakan sifat segiempat tali busur: sudut berhadapan berjumlah 180°, sehingga ∠ACB = 180° - 30° = 150°.',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 10,
@@ -171,7 +171,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Panjang busur = (90/360) × keliling = (1/4) × 44 = 11 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 11,
@@ -182,7 +182,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: '∠ACD = ∠ABD + ∠CBD = 25° + 40° = 65°, karena ∠ACD dan ∠ABD + ∠CBD menghadap busur AD yang sama dari lingkaran yang sama. Sudut keliling yang menghadap busur yang sama besarnya sama.',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 12,
@@ -193,7 +193,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Misalkan sudut pusat busur minor = α°, maka busur mayor = 360° - α°. Jika busur mayor = 3 × busur minor, maka 360° - α = 3α → 360° = 4α → α = 90°.',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 13,
@@ -204,7 +204,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Luas juring = (45/360) × πr² = (1/8) × (22/7) × 196 = (1/8) × 616 = 77 cm².',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 14,
@@ -215,7 +215,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Pada segiempat tali busur, sudut-sudut yang berhadapan berjumlah 180°. Sehingga ∠C = 180° - ∠A = 180° - 75° = 105°.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 15,
@@ -226,7 +226,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Panjang busur = (α/360°) × 2πr → 22 = (α/360) × 2 × (22/7) × 21 → 22 = (α/360) × 132 → α = 22 × 360/132 = 60°.',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 16,
@@ -237,7 +237,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Luas juring = (60/360) × luas lingkaran = (1/6) × luas lingkaran. Sehingga perbandingan luas juring : luas lingkaran = 1 : 6.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 17,
@@ -248,7 +248,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Karena keduanya menghadap busur yang sama, nilainya sama: 3x + 10 = 5x − 20 → 30 = 2x → x = 15.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 18,
@@ -259,7 +259,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Panjang busur = (α/360°) × 2πr → 5π = (α/360) × 20π → 5 = (α/360) × 20 → α = 5 × 360/20 = 90°.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 19,
@@ -270,7 +270,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Luas juring = (120/360) × 3,14 × 36 = (1/3) × 113,04 = 37,68 cm². Luas segitiga AOB = ½ × r² × sin120° = ½ × 36 × (√3/2) = 9√3 cm². Luas tembereng = 37,68 − 9√3 cm².',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 20,
@@ -281,7 +281,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Sudut pusat = 2 × sudut keliling. ∠BOC = 2 × ∠BAC = 2 × 40° = 80°.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 21,
@@ -292,7 +292,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Pukul 03.00: sudut pusat = 90°. (a) Sudut = 90°. (b) Panjang busur = (90/360) × 2 × (22/7) × 21 = (1/4) × 132 = 33 cm. (c) Luas juring = (90/360) × (22/7) × 441 = (1/4) × 1386 = 346,5 cm².',
       kesulitan: 'sulit',
       skor: 25,
-      waktu: 600,
+      waktu: 480,
     },
     {
       id: 22,
@@ -303,7 +303,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: '(a) Tiap potongan = 360°/8 = 45°. (b) Busur = (45/360) × πd = (1/8) × (22/7) × 28 = (1/8) × 88 = 11 cm. (c) Luas potongan besar (2 gabung, sudut 90°) = (90/360) × π × 14² = (1/4) × (22/7) × 196 = 154 cm². (d) Tidak adil karena 1 siswa mendapat 2× bagian siswa lain.',
       kesulitan: 'sulit',
       skor: 25,
-      waktu: 600,
+      waktu: 480,
     },
   ],
   'lingkaran-garis-singgung': [
@@ -316,7 +316,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Garis singgung lingkaran adalah garis yang memiliki tepat satu titik persekutuan dengan lingkaran. Titik tersebut disebut titik singgung.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 2,
@@ -327,7 +327,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Sifat utama garis singgung lingkaran: selalu tegak lurus terhadap jari-jari di titik singgung, sehingga sudut yang terbentuk antara keduanya adalah 90°.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 3,
@@ -338,7 +338,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Dari satu titik di luar lingkaran, dapat ditarik tepat dua garis singgung ke lingkaran tersebut, dan kedua garis singgung itu memiliki panjang yang sama.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 4,
@@ -349,7 +349,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Garis yang memiliki dua titik persekutuan dengan lingkaran disebut garis potong (sekans), bukan garis singgung. Garis singgung hanya menyentuh lingkaran di tepat satu titik.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 5,
@@ -360,7 +360,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Dua garis singgung yang ditarik dari satu titik di luar lingkaran selalu memiliki panjang yang sama, sehingga PA = PB.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 6,
@@ -371,7 +371,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Tali busur menghubungkan dua titik pada lingkaran (dua titik persekutuan), sedangkan garis singgung hanya menyentuh lingkaran di tepat satu titik (titik singgung).',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 7,
@@ -382,7 +382,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Jalan hanya menyentuh roda di tepat satu titik (titik singgung), sehingga jalan berperan sebagai garis singgung terhadap lingkaran roda. Jari-jari roda (OT) juga tegak lurus terhadap permukaan jalan di titik sentuh.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 8,
@@ -393,7 +393,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Karena PT ⊥ OT, gunakan Pythagoras: PT² = OP² - OT² = 10² - 6² = 100 - 36 = 64. PT = √64 = 8 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 9,
@@ -404,7 +404,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Gunakan teorema Pythagoras: PA² = OP² - r² = 13² - 5² = 169 - 25 = 144. PA = √144 = 12 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 10,
@@ -415,7 +415,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'OP² = OA² + PA² = 10² + 24² = 100 + 576 = 676. OP = √676 = 26 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 11,
@@ -426,7 +426,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Karena PA = PB: 4x - 3 = x + 9 → 3x = 12 → x = 4.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 12,
@@ -437,7 +437,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Garis singgung PT tegak lurus jari-jari OT di titik singgung T, sehingga ∠OTP = 90°. Segitiga OTP adalah segitiga siku-siku di T.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 13,
@@ -448,7 +448,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Jika P di dalam lingkaran, maka OP < r. Untuk garis singgung: PT² = OP² − r² < 0, hasilnya negatif dan tidak ada panjang nyata. Kesimpulan: tidak ada garis singgung dari titik dalam lingkaran.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 14,
@@ -459,7 +459,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Jika P tepat berada pada lingkaran, hanya ada satu garis singgung yang dapat dibuat di P, yaitu garis yang tegak lurus jari-jari OP di titik P.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 15,
@@ -470,7 +470,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'OP² = OT² + PT² = 9² + 12² = 81 + 144 = 225. OP = √225 = 15 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 16,
@@ -481,7 +481,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Segitiga OPA dan OPB kongruen karena: OA = OB = r, ∠OAP = ∠OBP = 90° (sifat garis singgung), dan OP = OP (sisi bersama). Kriteria RHS (siku-siku-miring-sisi) terpenuhi, sehingga PA = PB.',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 17,
@@ -492,7 +492,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Garis singgung adalah garis yang menyentuh lingkaran di tepat satu titik dan selalu tegak lurus terhadap jari-jari di titik singgung.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 18,
@@ -503,7 +503,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Kawat yang tegak lurus terhadap jari-jari di suatu titik pada lingkaran merupakan garis singgung lingkaran di titik tersebut.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 19,
@@ -514,7 +514,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'OP² = OT² + PT² = 8² + 15² = 64 + 225 = 289. OP = √289 = 17 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 20,
@@ -525,7 +525,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'PA² = OP² - r² = 25² - 7² = 625 - 49 = 576. PA = √576 = 24 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 21,
@@ -536,7 +536,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: '(a) Rel berfungsi sebagai garis singgung karena rel hanya menyentuh roda di tepat SATU titik (T). Jika rel menyentuh di lebih dari satu titik, rel akan memotong lingkaran roda, yang secara fisik tidak mungkin. (b) Jari-jari OT tegak lurus (90°) terhadap permukaan rel di titik T. Ini harus berlaku karena jarak terpendek dari pusat O ke garis (rel) adalah jari-jari r = OT — kondisi ini terpenuhi hanya jika OT tegak lurus rel. (c) Pendapat teman SALAH. Jika rel menyentuh dua titik, rel menjadi garis potong (sekans) yang memotong lingkaran roda. Secara fisik, ini berarti sebagian roda terbenam ke dalam rel — mustahil terjadi. Satu titik sentuh (garis singgung) justru memungkinkan roda berguling bebas.',
       kesulitan: 'sulit',
       skor: 25,
-      waktu: 600,
+      waktu: 480,
     },
     {
       id: 22,
@@ -547,7 +547,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: '(a) Karena garis singgung ⊥ jari-jari di titik singgung, maka ∠OAP = 90°. Dengan Pythagoras: PA² = OP² - OA² = 13² - 5² = 169 - 25 = 144. PA = 12 cm. (b) Pernyataan SALAH. PA = PB karena segitiga OAP dan OBP kongruen: OA = OB = r = 5 cm, OP = 13 cm (bersama), ∠OAP = ∠OBP = 90°. Dengan kriteria RHS, PA = PB = 12 cm. Posisi titik singgung tidak mempengaruhi panjang garis singgung dari titik yang sama. (c) Jika P di dalam lingkaran, maka OP < r. Untuk membuat garis singgung, diperlukan PT ⊥ OT dengan PT² = OP² - r². Karena OP < r, maka OP² - r² < 0 — hasilnya negatif dan tidak mungkin jadi panjang nyata. Kesimpulan: tidak ada garis singgung dari titik dalam lingkaran.',
       kesulitan: 'sulit',
       skor: 25,
-      waktu: 600,
+      waktu: 480,
     },
   ],
   'definisi-unsur': [
@@ -560,7 +560,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Diameter adalah garis yang menghubungkan dua titik pada lingkaran dan melalui pusat lingkaran. Panjang diameter sama dengan dua kali jari-jari (d = 2r).',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 2,
@@ -571,7 +571,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Keliling lingkaran = 2πr = 2 × (22/7) × 7 = 2 × 22 = 44 cm.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 3,
@@ -582,7 +582,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Juring (sektor) adalah daerah di dalam lingkaran yang dibatasi oleh dua jari-jari dan sebuah busur lingkaran.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 4,
@@ -593,7 +593,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'r = d/2 = 14/2 = 7 cm. Luas = πr² = (22/7) × 7² = (22/7) × 49 = 22 × 7 = 154 cm².',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 5,
@@ -604,7 +604,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Garis yang melalui pusat lingkaran dan tegak lurus pada tali busur akan selalu membagi tali busur menjadi dua bagian yang sama panjang (memotong di tengah tali busur).',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 6,
@@ -615,7 +615,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Apotema adalah jarak terpendek dari pusat lingkaran ke tali busur. Apotema selalu tegak lurus terhadap tali busur.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 7,
@@ -626,7 +626,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Tembereng adalah daerah dalam lingkaran yang dibatasi oleh tali busur dan busur yang menghadap tali busur tersebut.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 8,
@@ -637,7 +637,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'L = πr² → 314 = 3,14 × r² → r² = 100 → r = 10 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 9,
@@ -648,7 +648,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'K = 2πr → 62,8 = 2 × 3,14 × r → r = 10 cm. Luas = πr² = 3,14 × 100 = 314 cm².',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 10,
@@ -659,7 +659,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Diagonal adalah unsur segiempat, bukan unsur lingkaran. Unsur-unsur lingkaran antara lain: jari-jari, diameter, busur, tali busur, apotema, juring, dan tembereng.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 11,
@@ -670,7 +670,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Keliling roda = πd = (22/7) × 70 = 220 cm. Untuk 10 putaran = 10 × 220 = 2200 cm.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 12,
@@ -681,7 +681,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Diameter adalah tali busur yang melalui pusat lingkaran dan merupakan tali busur terpanjang dalam sebuah lingkaran.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 13,
@@ -692,7 +692,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Luas = π(R²−r²) = 3,14 × (64−25) = 3,14 × 39 = 122,46 cm².',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 14,
@@ -703,7 +703,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Jika diameter = 2d, maka jari-jari = 2r. Luas baru = π(2r)² = 4πr² = 4 × luas semula. Jadi luas menjadi 4 kali semula.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 15,
@@ -714,7 +714,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Tali busur adalah ruas garis yang menghubungkan dua titik yang terletak pada lingkaran. Tali busur tidak harus melalui pusat (jika melalui pusat, disebut diameter).',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 16,
@@ -725,7 +725,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'K = 2πr → 88 = 2 × (22/7) × r → r = 88 × 7 / (2 × 22) = 14 cm. Luas = πr² = (22/7) × 196 = 616 cm².',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 17,
@@ -736,7 +736,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Pusat lingkaran adalah titik yang jaraknya sama (= jari-jari) ke setiap titik yang berada pada lingkaran.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 18,
@@ -747,7 +747,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Keliling = 2πr = 2 × (22/7) × 35 = 2 × 110 = 220 m.',
       kesulitan: 'sedang',
       skor: 10,
-      waktu: 120,
+      waktu: 90,
     },
     {
       id: 19,
@@ -758,7 +758,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Apotema tegak lurus tali busur dan memotong tali busur di tengah, sehingga terbentuk segitiga siku-siku dengan sisi: apotema = 6 cm, setengah tali busur = 8 cm. r = √(6²+8²) = √(36+64) = √100 = 10 cm.',
       kesulitan: 'sulit',
       skor: 15,
-      waktu: 180,
+      waktu: 120,
     },
     {
       id: 20,
@@ -769,7 +769,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: 'Diameter adalah dua kali jari-jari, sehingga d = 2r. Atau sebaliknya, jari-jari adalah setengah diameter: r = d/2.',
       kesulitan: 'mudah',
       skor: 5,
-      waktu: 90,
+      waktu: 60,
     },
     {
       id: 21,
@@ -780,7 +780,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: '(a) r=7m, Luas kolam = (22/7)×49 = 154 m². (b) R=8m (7+1), Luas total = (22/7)×64 = 201,14 m². (c) Luas keramik = 201,14 - 154 = 47,14 m². (d) Biaya = 47,14 × 150.000 = Rp7.071.000.',
       kesulitan: 'sulit',
       skor: 25,
-      waktu: 600,
+      waktu: 480,
     },
     {
       id: 22,
@@ -791,7 +791,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       penjelasan: '(a) K=88m, 2πr=88, r=14m. (b) L=πr²=(22/7)×196=616 m². (c) Total bagian=8. Taman bunga=3/8×616=231m², area bermain=2/8×616=154m², jalur=154m², duduk=1/8×616=77m². (d) Sudut: 135°, 90°, 90°, 45°. (e) Tergantung kebutuhan; area bunga paling luas.',
       kesulitan: 'sulit',
       skor: 25,
-      waktu: 600,
+      waktu: 480,
     },
   ],
 };
