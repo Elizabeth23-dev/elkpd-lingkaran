@@ -4,7 +4,7 @@ import { soalPerTopik } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 
 /** Batas jumlah soal per sesi latihan */
-const MAX_SOAL = 15;
+const MAX_SOAL = 22;
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
