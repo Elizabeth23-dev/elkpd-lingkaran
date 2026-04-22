@@ -39,23 +39,25 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
           )}
         </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>📌 Rumus-rumus Penting</h2>
-          <div className={styles.rumusGrid}>
-            {konten.rumus.map((r, i) => (
-              <div key={i} className={styles.rumusCard}>
-                <div className={styles.rumusLabel}>{r.label}</div>
-                <div className={styles.rumusFormula}>
-                  {r.latex ? (
-                    <LatexFormula formula={r.formula} display={true} />
-                  ) : (
-                    r.formula
-                  )}
+        {konten.rumus.length > 0 && (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>📌 Rumus-rumus Penting</h2>
+            <div className={styles.rumusGrid}>
+              {konten.rumus.map((r, i) => (
+                <div key={i} className={styles.rumusCard}>
+                  <div className={styles.rumusLabel}>{r.label}</div>
+                  <div className={styles.rumusFormula}>
+                    {r.latex ? (
+                      <LatexFormula formula={r.formula} display={true} />
+                    ) : (
+                      r.formula
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>📝 Contoh Soal</h2>
