@@ -6,9 +6,6 @@ import { useAuth } from "~/hooks/use-auth";
 /** Batas jumlah soal per sesi latihan */
 const MAX_SOAL = 15;
 
-/** Total waktu latihan: 40 menit dalam detik */
-const TOTAL_WAKTU = 40 * 60;
-
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
 }
@@ -36,10 +33,13 @@ export function useLatihan(topicId: string) {
   const [submitted, setSubmitted] = useState<Record<number, boolean>>({});
   /** Base64 gambar untuk soal berpikir-kritis, keyed by soal index */
   const [essayImages, setEssayImages] = useState<Record<number, string>>({});
-  /** Timer global 40 menit */
-  const [timeLeft, setTimeLeft] = useState(TOTAL_WAKTU);
+  /** Timer per soal — diinisialisasi dari waktu soal saat ini */
+  const [soalTimeLeft, setSoalTimeLeft] = useState(soalList[0]?.waktu ?? 90);
   const [isFinished, setIsFinished] = useState(false);
   const startTimeRef = useRef(Date.now());
+  /** Ref untuk menyimpan soalList agar dapat diakses di closure timer */
+  const soalListRef = useRef(soalList);
+  soalListRef.current = soalList;
 
   // Jika siswa sudah mengerjakan latihan ini, redirect ke halaman hasil
   useEffect(() => {
@@ -51,23 +51,41 @@ export function useLatihan(topicId: string) {
     setAnswers({});
     setSubmitted({});
     setEssayImages({});
-    setTimeLeft(TOTAL_WAKTU);
+    setSoalTimeLeft(soalList[0]?.waktu ?? 90);
     setIsFinished(false);
     startTimeRef.current = Date.now();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId, user, navigate]);
 
-  // Global countdown — auto-submit semua soal jika waktu habis
+  // Reset timer setiap ganti soal
+  useEffect(() => {
+    const waktuSoal = soalList[currentIndex]?.waktu ?? 90;
+    setSoalTimeLeft(waktuSoal);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
+
+  // Countdown per soal — ketika habis, otomatis pindah ke soal berikutnya atau selesai
   useEffect(() => {
     if (isFinished) return;
-    if (timeLeft <= 0) {
-      handleSelesai();
+    // Jika soal sudah di-submit, timer berhenti (siswa bisa baca feedback)
+    if (submitted[currentIndex]) return;
+
+    if (soalTimeLeft <= 0) {
+      // Waktu habis: paksa pindah ke soal berikutnya atau selesai
+      const list = soalListRef.current;
+      if (currentIndex < list.length - 1) {
+        setCurrentIndex((i) => i + 1);
+      } else {
+        // Soal terakhir, auto-selesai
+        handleSelesaiRef.current();
+      }
       return;
     }
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+
+    const timer = setInterval(() => setSoalTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, isFinished]);
+  }, [soalTimeLeft, isFinished, currentIndex, submitted]);
 
   const currentSoal = soalList[currentIndex];
   const selectedAnswer = answers[currentIndex] ?? null;
@@ -102,6 +120,9 @@ export function useLatihan(topicId: string) {
   const handlePrev = useCallback(() => {
     if (currentIndex > 0) setCurrentIndex((i) => i - 1);
   }, [currentIndex]);
+
+  /** Dibungkus dalam ref agar bisa dipanggil dari dalam effect timer tanpa stale closure */
+  const handleSelesaiRef = useRef<() => void>(() => {});
 
   const handleSelesai = useCallback(() => {
     setIsFinished(true);
@@ -140,13 +161,16 @@ export function useLatihan(topicId: string) {
     navigate(`/hasil/${topicId}`);
   }, [topicId, answers, submitted, essayImages, soalList, navigate, user]);
 
+  // Sinkronisasi ref setiap handleSelesai berubah
+  handleSelesaiRef.current = handleSelesai;
+
   return {
     soalList,
     currentIndex,
     currentSoal,
     selectedAnswer,
     isSubmitted,
-    timeLeft,
+    soalTimeLeft,
     currentEssayImage,
     handleSelectAnswer,
     handleEssayImageUpload,

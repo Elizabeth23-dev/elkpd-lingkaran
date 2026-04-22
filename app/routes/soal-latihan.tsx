@@ -15,7 +15,7 @@ export default function SoalLatihan() {
     currentSoal,
     selectedAnswer,
     isSubmitted,
-    timeLeft,
+    soalTimeLeft,
     currentEssayImage,
     handleSelectAnswer,
     handleEssayImageUpload,
@@ -31,7 +31,7 @@ export default function SoalLatihan() {
     <div className={styles.root}>
       <HeaderLatihan
         topicId={topicId}
-        timeLeft={timeLeft}
+        timeLeft={soalTimeLeft}
         totalSoal={soalList.length}
         currentSoal={currentIndex + 1}
       />
