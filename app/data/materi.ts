@@ -894,10 +894,7 @@ Berbeda dengan garis potong (sekans) yang memiliki dua titik persekutuan, garis 
 \u2022 Garis singgung tidak memiliki dua titik yang terletak di dalam lingkaran.`,
       },
     ],
-    rumus: [
-      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada lingkaran berpusat O', formula: 'x_1 x + y_1 y = r^2', latex: true },
-      { label: 'Panjang garis singgung dari titik luar P(x\u2080,y\u2080)', formula: 'L = \\sqrt{x_0^2 + y_0^2 - r^2}', latex: true },
-    ],
+    rumus: [],
     contoh: [
       {
         soal: 'Tentukan persamaan garis singgung lingkaran x\u00b2+y\u00b2=25 di titik P(3,4)!',
