@@ -57,7 +57,7 @@ export const daftarMateri: Materi[] = [
     description: 'Pelajari pengertian dan sifat garis singgung lingkaran, serta cara menentukan persamaan garis singgung melalui titik pada lingkaran maupun dari titik di luar lingkaran.',
     estimasiWaktu: '45 menit',
     icon: 'git-branch',
-    topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung', 'Persamaan Garis Singgung di Titik pada Lingkaran', 'Persamaan Garis Singgung dari Titik Luar'],
+    topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung'],
   },
 ];
 
@@ -796,7 +796,7 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
   ],
 };
 
-export const kontenMateri: Record<string, { teori: string; subMateri?: SubMateri[]; rumus: Array<{label: string; formula: string}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
+export const kontenMateri: Record<string, { teori: string; subMateri?: SubMateri[]; rumus: Array<{label: string; formula: string; latex?: boolean}>; contoh: Array<{soal: string; solusi: string[]}> }> = {
   'lingkaran-busur': {
     teori: '',
     subMateri: [
@@ -846,10 +846,10 @@ di mana \u03b1 adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari l
       },
     ],
     rumus: [
-      { label: 'Sudut Pusat (\u03b1) terhadap Sudut Keliling (\u03b8)', formula: '\u03b1 = 2\u03b8' },
-      { label: 'Sudut Keliling (\u03b8) terhadap Sudut Pusat (\u03b1)', formula: '\u03b8 = \u00bd\u03b1' },
-      { label: 'Panjang Busur', formula: 'l = (\u03b1 / 360\u00b0) \u00d7 2\u03c0r' },
-      { label: 'Luas Juring', formula: 'L = (\u03b1 / 360\u00b0) \u00d7 \u03c0r\u00b2' },
+      { label: 'Sudut Pusat (\u03b1) terhadap Sudut Keliling (\u03b8)', formula: '\\alpha = 2\\theta', latex: true },
+      { label: 'Sudut Keliling (\u03b8) terhadap Sudut Pusat (\u03b1)', formula: '\\theta = \\dfrac{1}{2}\\alpha', latex: true },
+      { label: 'Panjang Busur', formula: 'l = \\dfrac{\\alpha}{360^\\circ} \\times 2\\pi r', latex: true },
+      { label: 'Luas Juring', formula: 'L = \\dfrac{\\alpha}{360^\\circ} \\times \\pi r^2', latex: true },
     ],
     contoh: [
       {
@@ -893,42 +893,10 @@ Berbeda dengan garis potong (sekans) yang memiliki dua titik persekutuan, garis 
 \u2022 Dua garis singgung dari titik luar memiliki panjang yang sama: Jika dari titik P di luar lingkaran dibuat dua garis singgung PA dan PB, maka PA = PB.
 \u2022 Garis singgung tidak memiliki dua titik yang terletak di dalam lingkaran.`,
       },
-      {
-        judul: 'Persamaan Garis Singgung di Titik pada Lingkaran',
-        isi: `Jika diketahui sebuah titik P(x\u2081, y\u2081) yang terletak pada lingkaran, maka persamaan garis singgung di titik tersebut dapat ditentukan.
-
-Untuk lingkaran x\u00b2 + y\u00b2 = r\u00b2:
-Persamaan garis singgung di titik (x\u2081, y\u2081): x\u2081x + y\u2081y = r\u00b2
-
-Untuk lingkaran (x-a)\u00b2 + (y-b)\u00b2 = r\u00b2 dengan pusat (a, b):
-Persamaan garis singgung di titik (x\u2081, y\u2081): (x\u2081-a)(x-a) + (y\u2081-b)(y-b) = r\u00b2
-
-Contoh: Garis singgung lingkaran x\u00b2+y\u00b2=25 di titik (3,4) adalah:
-3x + 4y = 25`,
-      },
-      {
-        judul: 'Persamaan Garis Singgung dari Titik Luar',
-        isi: `Jika titik P(x\u2080, y\u2080) berada di luar lingkaran, maka dapat dibuat dua garis singgung dari titik tersebut ke lingkaran.
-
-Panjang garis singgung dari titik luar P(x\u2080, y\u2080) ke lingkaran x\u00b2 + y\u00b2 = r\u00b2:
-L = \u221a(x\u2080\u00b2 + y\u2080\u00b2 - r\u00b2)
-
-Untuk lingkaran x\u00b2+y\u00b2+Ax+By+C=0, panjang garis singgungnya:
-L = \u221a(x\u2080\u00b2 + y\u2080\u00b2 + Ax\u2080 + By\u2080 + C)
-
-Titik singgungnya dapat dicari dengan cara:
-1. Misalkan titik singgung T(x\u2081, y\u2081) pada lingkaran
-2. Tulis persamaan garis singgung di T: x\u2081x + y\u2081y = r\u00b2
-3. Karena garis singgung melalui P(x\u2080, y\u2080), substitusi: x\u2081x\u2080 + y\u2081y\u2080 = r\u00b2
-4. Gunakan kondisi T pada lingkaran: x\u2081\u00b2 + y\u2081\u00b2 = r\u00b2
-5. Selesaikan sistem persamaan untuk memperoleh koordinat T`,
-      },
     ],
     rumus: [
-      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada x\u00b2+y\u00b2=r\u00b2', formula: 'x\u2081x + y\u2081y = r\u00b2' },
-      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada (x-a)\u00b2+(y-b)\u00b2=r\u00b2', formula: '(x\u2081-a)(x-a) + (y\u2081-b)(y-b) = r\u00b2' },
-      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada x\u00b2+y\u00b2+Ax+By+C=0', formula: 'x\u2081x + y\u2081y + \u00bdA(x\u2081+x) + \u00bdB(y\u2081+y) + C = 0' },
-      { label: 'Panjang garis singgung dari titik (x\u2080,y\u2080) ke x\u00b2+y\u00b2=r\u00b2', formula: 'L = \u221a(x\u2080\u00b2+y\u2080\u00b2-r\u00b2)' },
+      { label: 'Garis singgung di titik (x\u2081,y\u2081) pada lingkaran berpusat O', formula: 'x_1 x + y_1 y = r^2', latex: true },
+      { label: 'Panjang garis singgung dari titik luar P(x\u2080,y\u2080)', formula: 'L = \\sqrt{x_0^2 + y_0^2 - r^2}', latex: true },
     ],
     contoh: [
       {
@@ -993,10 +961,10 @@ Contoh: Lingkaran dengan jari-jari 7 cm memiliki keliling = 2 \u00d7 (22/7) \u00
       },
     ],
     rumus: [
-      { label: 'Keliling Lingkaran', formula: 'K = 2\u03c0r = \u03c0d' },
-      { label: 'Luas Lingkaran', formula: 'L = \u03c0r\u00b2' },
-      { label: 'Panjang Busur', formula: 'l = (\u03b1/360\u00b0) \u00d7 2\u03c0r' },
-      { label: 'Luas Juring', formula: 'Lⱼ = (α/360°) × πr²' },
+      { label: 'Keliling Lingkaran', formula: 'K = 2\\pi r = \\pi d', latex: true },
+      { label: 'Luas Lingkaran', formula: 'L = \\pi r^2', latex: true },
+      { label: 'Panjang Busur', formula: 'l = \\dfrac{\\alpha}{360^\\circ} \\times 2\\pi r', latex: true },
+      { label: 'Luas Juring', formula: 'L_j = \\dfrac{\\alpha}{360^\\circ} \\times \\pi r^2', latex: true },
     ],
     contoh: [
       {

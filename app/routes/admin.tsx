@@ -2,13 +2,14 @@ import { useEffect, useCallback, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
   Users, BookOpen, BarChart2, Award, Clock, CheckCircle,
-  XCircle, LogOut, ChevronRight, Layers, RotateCcw
+  XCircle, LogOut, ChevronRight, Layers, RotateCcw, FileText,
+  ChevronDown, ChevronUp, Image
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
 import { getDaftarAkunAsync } from '~/data/auth';
 import { invalidateCloudCache } from '~/data/cloud-storage';
 import type { User } from '~/data/auth';
-import { daftarMateri } from '~/data/materi';
+import { daftarMateri, soalPerTopik } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
 import styles from './admin.module.css';
 
@@ -31,11 +32,25 @@ function gradeLabel(score: number, total: number): { label: string; className: s
   return { label: 'E', className: styles.gradeE };
 }
 
+interface HasilSiswa {
+  score: number;
+  total: number;
+  totalSkor: number;
+  skorDiperoleh: number;
+  timeTaken: number;
+  done: boolean;
+  answers?: Record<number, number>;
+  essayImages?: Record<number, string>;
+  submitted?: Record<number, boolean>;
+}
+
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [siswaList, setSiswaList] = useState<User[]>([]);
   const [loadingSiswa, setLoadingSiswa] = useState(false);
+  const [expandedSiswa, setExpandedSiswa] = useState<string | null>(null);
+  const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
 
   const refreshSiswaList = useCallback(async (bypass = false) => {
     setLoadingSiswa(true);
@@ -49,8 +64,6 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Saat halaman admin dimuat: invalidate cache dulu, lalu fetch fresh dari JSONBin
-  // Auto-refresh setiap 15 detik agar data siswa selalu terbaru
   useEffect(() => {
     invalidateCloudCache();
     void refreshSiswaList(true);
@@ -76,15 +89,25 @@ export default function AdminPage() {
     daftarMateri.forEach((m) => sessionStorage.removeItem(hasilKey(siswaId, m.id)));
   }, []);
 
-  const getHasil = useCallback((siswaId: string, topicId: string) => {
+  const getHasil = useCallback((siswaId: string, topicId: string): HasilSiswa => {
     try {
       const raw = sessionStorage.getItem(hasilKey(siswaId, topicId));
       if (raw) {
-        const data = JSON.parse(raw) as { score: number; total: number; timeTaken: number };
-        return { score: data.score, total: data.total, timeTaken: data.timeTaken, done: true };
+        const data = JSON.parse(raw) as HasilSiswa & { score: number; total: number; timeTaken: number };
+        return {
+          score: data.score,
+          total: data.total,
+          totalSkor: data.totalSkor ?? data.total * 10,
+          skorDiperoleh: data.skorDiperoleh ?? data.score * 10,
+          timeTaken: data.timeTaken,
+          answers: data.answers,
+          essayImages: data.essayImages,
+          submitted: data.submitted,
+          done: true,
+        };
       }
     } catch { /* ignore */ }
-    return { score: 0, total: 5, timeTaken: 0, done: false };
+    return { score: 0, total: 15, totalSkor: 0, skorDiperoleh: 0, timeTaken: 0, done: false };
   }, []);
 
   useEffect(() => {
@@ -100,10 +123,9 @@ export default function AdminPage() {
     navigate('/login');
   };
 
-  const totalSiswa = siswaList.length; // dibaca dari state
+  const totalSiswa = siswaList.length;
   const totalMateri = daftarMateri.length;
 
-  // Aggregate stats — baca langsung dari sessionStorage
   let totalDone = 0;
   let totalScore = 0;
   let totalPossible = 0;
@@ -128,6 +150,15 @@ export default function AdminPage() {
     { icon: <CheckCircle size={22} />, label: 'Latihan Selesai', value: totalDone, color: styles.statSuccess },
     { icon: <BarChart2 size={22} />, label: 'Rata-rata Skor', value: `${avgScore}%`, color: styles.statAccent },
   ];
+
+  const toggleSiswa = (id: string) => {
+    setExpandedSiswa((prev) => (prev === id ? null : id));
+    setExpandedTopic(null);
+  };
+
+  const toggleTopic = (key: string) => {
+    setExpandedTopic((prev) => (prev === key ? null : key));
+  };
 
   return (
     <div className={styles.page}>
@@ -218,7 +249,7 @@ export default function AdminPage() {
                   const totalScoreS = hasilList.filter((h) => h.done).reduce((a, h) => a + h.score, 0);
                   const totalPossS = hasilList.filter((h) => h.done).reduce((a, h) => a + h.total, 0);
                   const avgS = totalPossS > 0 ? Math.round((totalScoreS / totalPossS) * 100) : 0;
-                                  return (
+                  return (
                     <tr key={siswa.id}>
                       <td className={styles.tdName}>
                         <div className={styles.avatarCell}>
@@ -266,6 +297,147 @@ export default function AdminPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Jawaban per kelompok */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            <FileText size={20} /> Jawaban Per Kelompok
+          </h2>
+          <div className={styles.jawabanList}>
+            {siswaList.map((siswa) => {
+              const isOpen = expandedSiswa === siswa.id;
+              return (
+                <div key={siswa.id} className={styles.jawabanCard}>
+                  <button
+                    className={styles.jawabanCardHeader}
+                    onClick={() => toggleSiswa(siswa.id)}
+                  >
+                    <div className={styles.jawabanAvatarRow}>
+                      <div className={styles.avatarLg}>{siswa.name.charAt(0)}</div>
+                      <div>
+                        <div className={styles.studentName}>{siswa.name}</div>
+                        <div className={styles.studentKelas}>{siswa.kelas}</div>
+                      </div>
+                    </div>
+                    {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </button>
+
+                  {isOpen && (
+                    <div className={styles.jawabanTopicList}>
+                      {daftarMateri.map((materi) => {
+                        const hasil = getHasil(siswa.id, materi.id);
+                        const topicKey = `${siswa.id}-${materi.id}`;
+                        const isTopicOpen = expandedTopic === topicKey;
+                        const soalList = soalPerTopik[materi.id]?.slice(0, 15) ?? [];
+
+                        return (
+                          <div key={materi.id} className={styles.jawabanTopic}>
+                            <button
+                              className={styles.jawabanTopicHeader}
+                              onClick={() => toggleTopic(topicKey)}
+                            >
+                              <div className={styles.jawabanTopicTitle}>
+                                <div className={styles.materiDot} />
+                                {materi.title}
+                              </div>
+                              <div className={styles.jawabanTopicMeta}>
+                                {hasil.done ? (
+                                  <span className={styles.scoreChip}>
+                                    {hasil.skorDiperoleh}/{hasil.totalSkor} poin · {formatTime(hasil.timeTaken)}
+                                  </span>
+                                ) : (
+                                  <span className={styles.belumChip}><XCircle size={12} /> Belum dikerjakan</span>
+                                )}
+                                {isTopicOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                              </div>
+                            </button>
+
+                            {isTopicOpen && hasil.done && (
+                              <div className={styles.soalJawabanList}>
+                                {soalList.map((soal, idx) => {
+                                  const jawaban = hasil.answers?.[idx];
+                                  const isKritis = soal.tipe === 'berpikir-kritis';
+                                  const gambar = hasil.essayImages?.[idx];
+                                  const isBenar = !isKritis && jawaban === soal.jawabanBenar;
+
+                                  return (
+                                    <div key={soal.id} className={styles.soalJawabanItem}>
+                                      <div className={styles.soalJawabanHeader}>
+                                        <span className={styles.soalNum}>Soal {idx + 1}</span>
+                                        <span className={`${styles.tipeBadge} ${isKritis ? styles.tipeBerpikir : styles.tipePG}`}>
+                                          {isKritis ? '🧠 Berpikir Kritis' : 'PG'}
+                                        </span>
+                                        {!isKritis && (
+                                          <span className={isBenar ? styles.benarChip : styles.salahChip}>
+                                            {isBenar ? '✓ Benar' : jawaban === undefined ? '— Tidak dijawab' : '✗ Salah'}
+                                          </span>
+                                        )}
+                                        {isKritis && gambar && (
+                                          <span className={styles.benarChip}>📸 Jawaban diunggah</span>
+                                        )}
+                                      </div>
+
+                                      <p className={styles.soalPertanyaan}>{soal.pertanyaan}</p>
+
+                                      {!isKritis && (
+                                        <div className={styles.pilihanGrid}>
+                                          {soal.pilihan.map((p, pi) => (
+                                            <div
+                                              key={pi}
+                                              className={`${styles.pilihanItem}
+                                                ${pi === soal.jawabanBenar ? styles.pilihanBenar : ''}
+                                                ${pi === jawaban && pi !== soal.jawabanBenar ? styles.pilihanSalah : ''}
+                                              `}
+                                            >
+                                              <span className={styles.pilihanLetter}>{String.fromCharCode(65 + pi)}</span>
+                                              <span>{p}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+
+                                      {isKritis && gambar && (
+                                        <div className={styles.gambarWrap}>
+                                          <div className={styles.gambarLabel}>
+                                            <Image size={14} /> Jawaban Tulisan Tangan
+                                          </div>
+                                          <img
+                                            src={gambar}
+                                            alt={`Jawaban soal ${idx + 1}`}
+                                            className={styles.gambarJawaban}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {isKritis && !gambar && (
+                                        <p className={styles.tidakAdaGambar}>Tidak ada gambar yang diunggah</p>
+                                      )}
+
+                                      <div className={styles.pembahasanWrap}>
+                                        <span className={styles.pembahasanLabel}>Pembahasan:</span>
+                                        <span className={styles.pembahasanText}>{soal.penjelasan}</span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {isTopicOpen && !hasil.done && (
+                              <div className={styles.belumInfo}>
+                                Siswa belum mengerjakan latihan pada materi ini.
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
 

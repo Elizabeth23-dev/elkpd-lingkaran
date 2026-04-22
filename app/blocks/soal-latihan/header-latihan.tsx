@@ -30,7 +30,7 @@ export function HeaderLatihan({ className, topicId, timeLeft, totalSoal, current
             <span className={styles.breadcrumbCurrent}>Latihan</span>
           </nav>
 
-          <div className={classnames(styles.timer, timeLeft < 60 && styles.timerWarning)}>
+          <div className={classnames(styles.timer, timeLeft < 300 && styles.timerWarning)}>
             <Clock size={16} />
             <span>{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
           </div>

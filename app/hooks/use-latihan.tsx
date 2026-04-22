@@ -3,6 +3,12 @@ import { useNavigate } from "react-router";
 import { soalPerTopik } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 
+/** Batas jumlah soal per sesi latihan */
+const MAX_SOAL = 15;
+
+/** Total waktu latihan: 40 menit dalam detik */
+const TOTAL_WAKTU = 40 * 60;
+
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
 }
@@ -20,18 +26,20 @@ export function sudahSelesai(siswaId: string, topicId: string): boolean {
 export function useLatihan(topicId: string) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const soalList = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
+
+  // Ambil soal dan batasi ke 15 soal
+  const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
+  const soalList = allSoal.slice(0, MAX_SOAL);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState<Record<number, boolean>>({});
   /** Base64 gambar untuk soal berpikir-kritis, keyed by soal index */
   const [essayImages, setEssayImages] = useState<Record<number, string>>({});
-  const [timeLeft, setTimeLeft] = useState(soalList[0]?.waktu ?? 120);
+  /** Timer global 40 menit */
+  const [timeLeft, setTimeLeft] = useState(TOTAL_WAKTU);
   const [isFinished, setIsFinished] = useState(false);
-  const totalTimeRef = useRef(0);
-
-  const currentWaktu = soalList[currentIndex]?.waktu ?? 120;
+  const startTimeRef = useRef(Date.now());
 
   // Jika siswa sudah mengerjakan latihan ini, redirect ke halaman hasil
   useEffect(() => {
@@ -43,28 +51,23 @@ export function useLatihan(topicId: string) {
     setAnswers({});
     setSubmitted({});
     setEssayImages({});
-    setTimeLeft(soalList[0]?.waktu ?? 120);
+    setTimeLeft(TOTAL_WAKTU);
     setIsFinished(false);
-    totalTimeRef.current = 0;
+    startTimeRef.current = Date.now();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId, user, navigate]);
 
-  // Reset timer saat pindah soal
-  useEffect(() => {
-    setTimeLeft(currentWaktu);
-  }, [currentIndex, currentWaktu]);
-
-  // Countdown timer — auto-submit soal jika waktu habis
+  // Global countdown — auto-submit semua soal jika waktu habis
   useEffect(() => {
     if (isFinished) return;
     if (timeLeft <= 0) {
-      setSubmitted((prev) => ({ ...prev, [currentIndex]: true }));
-      totalTimeRef.current += currentWaktu;
+      handleSelesai();
       return;
     }
     const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isFinished, currentIndex, currentWaktu]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft, isFinished]);
 
   const currentSoal = soalList[currentIndex];
   const selectedAnswer = answers[currentIndex] ?? null;
@@ -83,14 +86,12 @@ export function useLatihan(topicId: string) {
   const handleSubmit = useCallback(() => {
     const soal = soalList[currentIndex];
     if (soal.tipe === 'berpikir-kritis') {
-      // Essay dianggap submitted saat ada gambar atau setelah waktu habis
       if (!essayImages[currentIndex]) return;
     } else {
       if (answers[currentIndex] === undefined) return;
     }
-    totalTimeRef.current += currentWaktu - timeLeft;
     setSubmitted((prev) => ({ ...prev, [currentIndex]: true }));
-  }, [currentIndex, answers, timeLeft, soalList, essayImages, currentWaktu]);
+  }, [currentIndex, answers, soalList, essayImages]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < soalList.length - 1) {
@@ -105,12 +106,13 @@ export function useLatihan(topicId: string) {
   const handleSelesai = useCallback(() => {
     setIsFinished(true);
 
+    const timeTaken = Math.round((Date.now() - startTimeRef.current) / 1000);
+
     // Hitung skor berbobot berdasarkan kesulitan
     const { score, totalSkor, skorDiperoleh } = soalList.reduce(
       (acc, soal, idx) => {
         acc.totalSkor += soal.skor;
         if (soal.tipe === 'berpikir-kritis') {
-          // Essay: skor penuh jika ada gambar yang diupload
           if (essayImages[idx]) acc.skorDiperoleh += soal.skor;
         } else {
           if (answers[idx] === soal.jawabanBenar) {
@@ -132,7 +134,7 @@ export function useLatihan(topicId: string) {
       total: soalList.length,
       totalSkor,
       skorDiperoleh,
-      timeTaken: totalTimeRef.current,
+      timeTaken,
     };
     if (user) sessionStorage.setItem(hasilKey(user.id, topicId), JSON.stringify(resultData));
     navigate(`/hasil/${topicId}`);

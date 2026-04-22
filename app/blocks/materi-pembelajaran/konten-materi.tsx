@@ -1,5 +1,6 @@
 import classnames from "classnames";
 import { kontenMateri, daftarMateri } from "~/data/materi";
+import { LatexFormula } from "~/components/latex-formula/latex-formula";
 import styles from "./konten-materi.module.css";
 
 export interface KontenMateriProps {
@@ -44,7 +45,13 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
             {konten.rumus.map((r, i) => (
               <div key={i} className={styles.rumusCard}>
                 <div className={styles.rumusLabel}>{r.label}</div>
-                <div className={styles.rumusFormula}>{r.formula}</div>
+                <div className={styles.rumusFormula}>
+                  {r.latex ? (
+                    <LatexFormula formula={r.formula} display={true} />
+                  ) : (
+                    r.formula
+                  )}
+                </div>
               </div>
             ))}
           </div>
