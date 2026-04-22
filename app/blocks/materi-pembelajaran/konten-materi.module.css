@@ -85,6 +85,12 @@
   display: none;
 }
 
+.inlineLatex {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0;
+}
+
 .rumusGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

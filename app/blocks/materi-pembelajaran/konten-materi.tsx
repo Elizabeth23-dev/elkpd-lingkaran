@@ -23,9 +23,17 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
                 <div key={i} className={styles.subMateriItem}>
                   <h3 className={styles.subMateriJudul}>{sub.judul}</h3>
                   <div className={styles.teoriText}>
-                    {sub.isi.split('\n').map((line, j) => (
-                      <p key={j} className={styles.teoriParagraph}>{line}</p>
-                    ))}
+                    {sub.isi.split('\n').map((line, j) => {
+                      const latexMatch = line.match(/^\$\$(.+)\$\$/);
+                      if (latexMatch) {
+                        return (
+                          <div key={j} className={styles.inlineLatex}>
+                            <LatexFormula formula={latexMatch[1]} display={true} />
+                          </div>
+                        );
+                      }
+                      return <p key={j} className={styles.teoriParagraph}>{line}</p>;
+                    })}
                   </div>
                 </div>
               ))}
