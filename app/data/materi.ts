@@ -835,12 +835,12 @@ Sifat-sifat penting:
         isi: `Panjang Busur adalah panjang kurva busur yang dibatasi oleh dua titik pada lingkaran. Panjang busur sebanding dengan besar sudut pusat yang menghadapinya.
 
 Rumus Panjang Busur:
-$l = \\dfrac{\\alpha}{360^\\circ} \\times 2\\pi r$
+l = (α/360°) × 2πr
 
 Luas Juring adalah luas daerah yang dibatasi oleh dua jari-jari dan sebuah busur lingkaran. Luas juring juga sebanding dengan besar sudut pusat.
 
 Rumus Luas Juring:
-$L = \\dfrac{\\alpha}{360^\\circ} \\times \\pi r^2$
+L = (α/360°) × πr²
 
 di mana \u03b1 adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari lingkaran.`
       },
