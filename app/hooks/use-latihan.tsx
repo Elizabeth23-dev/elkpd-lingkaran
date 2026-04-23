@@ -59,7 +59,12 @@ export function useLatihan(topicId: string) {
   const { user } = useAuth();
 
   const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
-  const soalList = allSoal.slice(0, MAX_SOAL);
+  // Soal berpikir-kritis diletakkan di urutan pertama
+  const sortedSoal = [
+    ...allSoal.filter((s) => s.tipe === 'berpikir-kritis'),
+    ...allSoal.filter((s) => s.tipe !== 'berpikir-kritis'),
+  ];
+  const soalList = sortedSoal.slice(0, MAX_SOAL);
 
   // Inisialisasi state dari progress yang tersimpan (jika ada)
   const [currentIndex, setCurrentIndex] = useState(() => {
