@@ -3,8 +3,10 @@ import { useNavigate } from "react-router";
 import { soalPerTopik } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 
-/** Batas jumlah soal per sesi latihan */
-const MAX_SOAL = 22;
+/** Jumlah soal berpikir-kritis per sesi */
+const MAX_BERPIKIR_KRITIS = 1;
+/** Jumlah soal pilihan-ganda per sesi */
+const MAX_PILIHAN_GANDA = 14;
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
@@ -59,12 +61,11 @@ export function useLatihan(topicId: string) {
   const { user } = useAuth();
 
   const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
-  // Soal berpikir-kritis diletakkan di urutan pertama
-  const sortedSoal = [
-    ...allSoal.filter((s) => s.tipe === 'berpikir-kritis'),
-    ...allSoal.filter((s) => s.tipe !== 'berpikir-kritis'),
+  // 1 soal berpikir-kritis di urutan pertama, diikuti 14 soal pilihan-ganda
+  const soalList = [
+    ...allSoal.filter((s) => s.tipe === 'berpikir-kritis').slice(0, MAX_BERPIKIR_KRITIS),
+    ...allSoal.filter((s) => s.tipe !== 'berpikir-kritis').slice(0, MAX_PILIHAN_GANDA),
   ];
-  const soalList = sortedSoal.slice(0, MAX_SOAL);
 
   // Inisialisasi state dari progress yang tersimpan (jika ada)
   const [currentIndex, setCurrentIndex] = useState(() => {
