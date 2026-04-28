@@ -108,7 +108,6 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
                             <div key={k} className={styles.poinItem}>
                               <div className={styles.poinLetter}>{p.letter}.</div>
                               <div className={styles.poinKonten}>
-                                {p.label && <span className={styles.poinLabel}>[{p.label}]</span>}
                                 {p.body && <span className={styles.poinBody}>{p.body}</span>}
                               </div>
                             </div>

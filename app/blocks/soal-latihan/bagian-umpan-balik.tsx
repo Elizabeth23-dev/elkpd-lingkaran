@@ -44,7 +44,9 @@ export function BagianUmpanBalik({ className, soal, selectedAnswer, isVisible }:
               <Lightbulb size={16} className={styles.penjelasanIcon} />
               <span>Penjelasan</span>
             </div>
-            <p className={styles.penjelasanText}>{soal.penjelasan}</p>
+            {soal.penjelasan.split('\n').map((line, i) => (
+              <p key={i} className={styles.penjelasanText}>{line || '\u00a0'}</p>
+            ))}
           </div>
         </div>
       </div>

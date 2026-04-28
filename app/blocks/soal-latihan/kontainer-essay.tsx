@@ -81,7 +81,9 @@ export function KontainerEssay({
           </div>
 
           <div className={styles.soalInstruksi}>
-            <p className={styles.pertanyaan}>{soal.pertanyaan}</p>
+            {soal.pertanyaan.split('\n').map((line, i) => (
+              <p key={i} className={styles.pertanyaan}>{line || '\u00a0'}</p>
+            ))}
           </div>
 
           <div className={styles.uploadSection}>
@@ -137,7 +139,9 @@ export function KontainerEssay({
                 <Lightbulb size={16} className={styles.kunciIcon} />
                 <span>Kunci Jawaban &amp; Rubrik</span>
               </div>
-              <p className={styles.kunciText}>{soal.penjelasan}</p>
+              {soal.penjelasan.split('\n').map((line, i) => (
+                <p key={i} className={styles.kunciText}>{line || '\u00a0'}</p>
+              ))}
             </div>
           )}
         </div>
