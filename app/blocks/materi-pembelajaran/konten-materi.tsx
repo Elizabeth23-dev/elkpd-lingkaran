@@ -8,6 +8,26 @@ export interface KontenMateriProps {
   topicId: string;
 }
 
+/** Regex to match poin like: "a. [Label] text" or "a. text" */
+const POIN_REGEX = /^([a-e])\. (\[.+?\])?(.*)$/;
+
+function renderSoalLines(soal: string) {
+  const lines = soal.split('\n');
+  const intro: string[] = [];
+  const poin: { letter: string; label: string; body: string }[] = [];
+
+  for (const line of lines) {
+    const m = line.match(POIN_REGEX);
+    if (m) {
+      poin.push({ letter: m[1], label: m[2]?.replace(/^\[|\]$/g, '') ?? '', body: m[3].trim() });
+    } else {
+      if (poin.length === 0) intro.push(line);
+    }
+  }
+
+  return { intro, poin };
+}
+
 export function KontenMateri({ className, topicId }: KontenMateriProps) {
   const konten = kontenMateri[topicId] ?? kontenMateri['definisi-unsur'];
   const materi = daftarMateri.find((m) => m.id === topicId) ?? daftarMateri[0];
@@ -74,7 +94,31 @@ export function KontenMateri({ className, topicId }: KontenMateriProps) {
               <div className={styles.contohHeader}>
                 <span className={styles.contohNum}>Contoh {i + 1}</span>
               </div>
-              <div className={styles.contohSoal}>{contoh.soal}</div>
+              <div className={styles.contohSoal}>
+                {(() => {
+                  const { intro, poin } = renderSoalLines(contoh.soal);
+                  return (
+                    <>
+                      {intro.filter(l => l.trim()).map((line, k) => (
+                        <p key={k} className={styles.soalIntro}>{line}</p>
+                      ))}
+                      {poin.length > 0 && (
+                        <div className={styles.poinList}>
+                          {poin.map((p, k) => (
+                            <div key={k} className={styles.poinItem}>
+                              <div className={styles.poinLetter}>{p.letter}.</div>
+                              <div className={styles.poinKonten}>
+                                {p.label && <span className={styles.poinLabel}>[{p.label}]</span>}
+                                {p.body && <span className={styles.poinBody}>{p.body}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
               <div className={styles.contohSolusiTitle}>Penyelesaian:</div>
               <ol className={styles.solusiList}>
                 {contoh.solusi.map((step, j) => (

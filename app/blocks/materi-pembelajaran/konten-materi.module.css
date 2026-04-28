@@ -147,10 +147,57 @@
 }
 
 .contohSoal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.soalIntro {
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.6;
+}
+
+.poinList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.poinItem {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.poinLetter {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 24px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.poinKonten {
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+.poinLabel {
+  display: inline;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-right: var(--space-1);
+}
+
+.poinBody {
+  font-weight: 500;
+  color: var(--color-text-primary);
 }
 
 .contohSolusiTitle {
