@@ -1,21 +1,19 @@
 /**
- * Result storage service: menyimpan hasil pengerjaan latihan siswa ke JSONBin.io
- * sehingga guru bisa memantau dari device manapun.
+ * Result storage service: menyimpan hasil pengerjaan latihan siswa ke Supabase
+ * (tabel `cloud_hasil`) sehingga guru bisa memantau dari device manapun.
  *
- * Memakai bin yang sama dengan akun siswa (cloud-storage.ts), hanya menambah
- * key `hasil` di JSON root.
+ * Migrasi dari JSONBin: API publik modul ini (`fetchAllHasil`, `fetchHasil`,
+ * `pushHasil`, `deleteHasil`, `reconcileLocalHasil`, `invalidateHasilCache`)
+ * tetap dipertahankan untuk backward compatibility dengan call site yang ada.
  *
- * Format bin: { "users": CloudUser[], "hasil": CloudHasil[] }
- *
- * Race condition mitigation: setiap pushHasil melakukan fetch-merge-put dengan
- * retry exponential. Jika dua siswa submit nyaris bersamaan, yang kedua akan
- * fetch state terbaru (termasuk entry siswa pertama) sebelum push.
+ * Race condition: tidak perlu fetch-merge-put manual lagi, karena Supabase
+ * mengupdate per-row (`upsert` & `delete` by id) — tidak ada lagi PUT seluruh
+ * bin yang bisa overwrite data siswa lain.
  */
 
-import { getActiveApiKey, getActiveBinId, type CloudUser } from './cloud-storage';
+import { getSupabase, isSupabaseConfigured } from './supabase-client';
+import type { CloudUser } from './cloud-storage';
 import { daftarMateri } from './materi';
-
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
 
 const HASIL_CACHE_KEY = 'elkpd-hasil-cache';
 const HASIL_LOCAL_FALLBACK = 'elkpd-local-hasil';
@@ -35,14 +33,9 @@ export interface CloudHasil {
   timeTaken: number;
   answers: Record<number, number>;
   submitted: Record<number, boolean>;
-  /** URL ImgBB (bukan base64) — supaya tidak penuhin kuota JSONBin. */
+  /** URL ImgBB (bukan base64) — supaya tidak penuhin kuota DB. */
   essayImageUrls: Record<number, string>;
   submittedAt: number;
-}
-
-interface CloudData {
-  users?: CloudUser[];
-  hasil?: CloudHasil[];
 }
 
 interface CacheEntry {
@@ -50,36 +43,70 @@ interface CacheEntry {
   ts: number;
 }
 
-function isConfigured(): boolean {
-  return Boolean(getActiveApiKey() && getActiveBinId());
+// Re-export untuk backward compatibility; sebagian call site masih import dari sini.
+export type { CloudUser };
+
+interface SupabaseHasilRow {
+  id: string;
+  siswa_id: string;
+  siswa_name: string;
+  topic_id: string;
+  score: number;
+  total: number;
+  total_skor: number;
+  skor_diperoleh: number;
+  time_taken: number;
+  answers: Record<string, number> | null;
+  submitted: Record<string, boolean> | null;
+  essay_image_urls: Record<string, string> | null;
+  submitted_at: string;
 }
 
-async function fetchBin(): Promise<CloudData> {
-  const apiKey = getActiveApiKey();
-  const binId = getActiveBinId();
-  const res = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
-    headers: {
-      'X-Master-Key': apiKey,
-      'X-Bin-Meta': 'false',
-      'Cache-Control': 'no-cache',
-    },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return (await res.json()) as CloudData;
+/** Konversi dari Record<number, T> (dipakai di TS) ke object yang aman ditulis ke jsonb. */
+function numericKeyedRecord<T>(input: Record<string, T> | null | undefined): Record<number, T> {
+  if (!input) return {};
+  const out: Record<number, T> = {};
+  for (const [k, v] of Object.entries(input)) {
+    const n = Number(k);
+    if (!Number.isNaN(n)) out[n] = v;
+  }
+  return out;
 }
 
-async function putBin(data: CloudData): Promise<void> {
-  const apiKey = getActiveApiKey();
-  const binId = getActiveBinId();
-  const res = await fetch(`${JSONBIN_BASE}/b/${binId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': apiKey,
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+function rowToHasil(row: SupabaseHasilRow): CloudHasil {
+  return {
+    id: row.id,
+    siswaId: row.siswa_id,
+    siswaName: row.siswa_name,
+    topicId: row.topic_id,
+    score: row.score,
+    total: row.total,
+    totalSkor: row.total_skor,
+    skorDiperoleh: row.skor_diperoleh,
+    timeTaken: row.time_taken,
+    answers: numericKeyedRecord<number>(row.answers),
+    submitted: numericKeyedRecord<boolean>(row.submitted),
+    essayImageUrls: numericKeyedRecord<string>(row.essay_image_urls),
+    submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : Date.now(),
+  };
+}
+
+function hasilToRow(entry: CloudHasil): SupabaseHasilRow {
+  return {
+    id: entry.id,
+    siswa_id: entry.siswaId,
+    siswa_name: entry.siswaName,
+    topic_id: entry.topicId,
+    score: entry.score,
+    total: entry.total,
+    total_skor: entry.totalSkor,
+    skor_diperoleh: entry.skorDiperoleh,
+    time_taken: entry.timeTaken,
+    answers: entry.answers ?? {},
+    submitted: entry.submitted ?? {},
+    essay_image_urls: entry.essayImageUrls ?? {},
+    submitted_at: new Date(entry.submittedAt || Date.now()).toISOString(),
+  };
 }
 
 function readLocalHasil(): CloudHasil[] {
@@ -130,9 +157,21 @@ function upsert(list: CloudHasil[], entry: CloudHasil): CloudHasil[] {
   return next;
 }
 
+async function fetchAllFromSupabase(): Promise<CloudHasil[]> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase belum dikonfigurasi');
+  const { data, error } = await supabase
+    .from('cloud_hasil')
+    .select(
+      'id, siswa_id, siswa_name, topic_id, score, total, total_skor, skor_diperoleh, time_taken, answers, submitted, essay_image_urls, submitted_at'
+    );
+  if (error) throw error;
+  return (data ?? []).map((row) => rowToHasil(row as SupabaseHasilRow));
+}
+
 /** Ambil semua hasil dari cloud (dengan cache). Fallback ke localStorage jika tidak terkonfigurasi. */
 export async function fetchAllHasil(bypassCache = false): Promise<CloudHasil[]> {
-  if (!isConfigured()) {
+  if (!isSupabaseConfigured()) {
     return readLocalHasil();
   }
   if (!bypassCache) {
@@ -140,13 +179,12 @@ export async function fetchAllHasil(bypassCache = false): Promise<CloudHasil[]> 
     if (cached) return cached;
   }
   try {
-    const bin = await fetchBin();
-    const hasil = Array.isArray(bin.hasil) ? bin.hasil : [];
+    const hasil = await fetchAllFromSupabase();
     setCache(hasil);
     writeLocalHasil(hasil);
     return hasil;
   } catch (err) {
-    console.warn('[result-storage] Gagal fetch hasil dari cloud, pakai localStorage:', err);
+    console.warn('[result-storage] Gagal fetch hasil dari Supabase, pakai localStorage:', err);
     return readLocalHasil();
   }
 }
@@ -165,21 +203,22 @@ export async function pushHasil(entry: CloudHasil): Promise<void> {
   writeLocalHasil(localUpdated);
   setCache(localUpdated);
 
-  if (!isConfigured()) {
-    console.warn('[result-storage] Cloud tidak terkonfigurasi, hasil hanya tersimpan lokal.');
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured()) {
+    console.warn('[result-storage] Supabase belum dikonfigurasi, hasil hanya tersimpan lokal.');
     return;
   }
 
   let lastErr: unknown;
   for (let attempt = 1; attempt <= MAX_PUSH_RETRY; attempt++) {
     try {
-      const bin = await fetchBin();
-      const existingHasil = Array.isArray(bin.hasil) ? bin.hasil : [];
-      const merged = upsert(existingHasil, entry);
-      const newBin: CloudData = { ...bin, hasil: merged };
-      await putBin(newBin);
+      const { error } = await supabase
+        .from('cloud_hasil')
+        .upsert(hasilToRow(entry), { onConflict: 'id' });
+      if (error) throw error;
       invalidateHasilCache();
-      setCache(merged);
+      // Re-cache dengan data terbaru dari local (sudah berisi entry).
+      setCache(localUpdated);
       console.info(`[result-storage] Push hasil ${entry.id} berhasil (attempt ${attempt})`);
       return;
     } catch (err) {
@@ -199,18 +238,21 @@ export async function deleteHasil(siswaId: string, topicId: string): Promise<voi
   writeLocalHasil(local);
   setCache(local);
 
-  if (!isConfigured()) return;
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured()) return;
+
+  const compositeId = `${siswaId}-${topicId}`;
 
   let lastErr: unknown;
   for (let attempt = 1; attempt <= MAX_PUSH_RETRY; attempt++) {
     try {
-      const bin = await fetchBin();
-      const filtered = (Array.isArray(bin.hasil) ? bin.hasil : []).filter(
-        (h) => !(h.siswaId === siswaId && h.topicId === topicId)
-      );
-      await putBin({ ...bin, hasil: filtered });
+      const { error } = await supabase
+        .from('cloud_hasil')
+        .delete()
+        .eq('id', compositeId);
+      if (error) throw error;
       invalidateHasilCache();
-      setCache(filtered);
+      setCache(local);
       return;
     } catch (err) {
       lastErr = err;
@@ -235,17 +277,16 @@ export async function deleteHasil(siswaId: string, topicId: string): Promise<voi
  * menghapus data lokal hanya karena offline.
  */
 export async function reconcileLocalHasil(siswaId: string): Promise<void> {
-  if (!isConfigured()) return;
+  if (!isSupabaseConfigured()) return;
   if (typeof window === 'undefined') return;
 
-  // Catatan: panggil fetchBin() langsung supaya error network bisa propagate.
-  // fetchAllHasil() internal-fallback ke localStorage saat cloud gagal — kalau
-  // dipakai di sini, kita bisa salah anggap "cloud kosong" padahal sebenarnya
-  // offline, lalu menghapus sessionStorage hasil siswa secara keliru.
+  // Catatan: kita perlu fetch fresh dari Supabase langsung — bukan via fetchAllHasil
+  // (yang fallback ke localStorage saat error), karena di sini kita membedakan
+  // "cloud kosong" vs "offline" untuk memutuskan apakah aman menghapus
+  // sessionStorage hasil siswa.
   let cloudHasil: CloudHasil[];
   try {
-    const bin = await fetchBin();
-    cloudHasil = Array.isArray(bin.hasil) ? bin.hasil : [];
+    cloudHasil = await fetchAllFromSupabase();
   } catch {
     return; // gagal fetch → biarkan local apa adanya
   }
