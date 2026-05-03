@@ -4,3 +4,15 @@
   min-height: calc(100vh - 64px);
   background: var(--color-bg);
 }
+
+.submitError {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  text-align: center;
+}

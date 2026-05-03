@@ -3,14 +3,20 @@ import { useNavigate, Link } from 'react-router';
 import {
   Users, BookOpen, BarChart2, Award, Clock, CheckCircle,
   XCircle, LogOut, ChevronRight, Layers, RotateCcw, FileText,
-  ChevronDown, ChevronUp, Image
+  ChevronDown, ChevronUp, Image, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
 import { getDaftarAkunAsync } from '~/data/auth';
 import { invalidateCloudCache } from '~/data/cloud-storage';
 import type { User } from '~/data/auth';
-import { daftarMateri, soalPerTopik } from '~/data/materi';
+import { daftarMateri, buildSoalList } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
+import {
+  fetchAllHasil,
+  deleteHasil,
+  invalidateHasilCache,
+  type CloudHasil,
+} from '~/data/result-storage';
 import styles from './admin.module.css';
 
 export function meta() {
@@ -42,23 +48,33 @@ interface HasilSiswa {
   answers?: Record<number, number>;
   essayImages?: Record<number, string>;
   submitted?: Record<number, boolean>;
+  submittedAt?: number;
 }
 
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [siswaList, setSiswaList] = useState<User[]>([]);
+  const [hasilMap, setHasilMap] = useState<Record<string, CloudHasil>>({});
   const [loadingSiswa, setLoadingSiswa] = useState(false);
   const [expandedSiswa, setExpandedSiswa] = useState<string | null>(null);
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
 
-  const refreshSiswaList = useCallback(async (bypass = false) => {
+  const refreshAll = useCallback(async (bypass = false) => {
     setLoadingSiswa(true);
     try {
-      const all = await getDaftarAkunAsync(bypass);
+      const [all, hasilList] = await Promise.all([
+        getDaftarAkunAsync(bypass),
+        fetchAllHasil(bypass),
+      ]);
       setSiswaList(all.filter((u) => u.role === 'siswa'));
+      const map: Record<string, CloudHasil> = {};
+      for (const h of hasilList) {
+        map[`${h.siswaId}-${h.topicId}`] = h;
+      }
+      setHasilMap(map);
     } catch {
-      // fallback sudah ditangani di getDaftarAkunAsync
+      // fallback sudah ditangani di getDaftarAkunAsync & fetchAllHasil
     } finally {
       setLoadingSiswa(false);
     }
@@ -66,16 +82,19 @@ export default function AdminPage() {
 
   useEffect(() => {
     invalidateCloudCache();
-    void refreshSiswaList(true);
+    invalidateHasilCache();
+    void refreshAll(true);
 
     const interval = setInterval(() => {
       invalidateCloudCache();
-      void refreshSiswaList(true);
+      invalidateHasilCache();
+      void refreshAll(true);
     }, 15_000);
 
     const onStorage = () => {
       invalidateCloudCache();
-      void refreshSiswaList(true);
+      invalidateHasilCache();
+      void refreshAll(true);
     };
     window.addEventListener('storage', onStorage);
 
@@ -83,32 +102,67 @@ export default function AdminPage() {
       clearInterval(interval);
       window.removeEventListener('storage', onStorage);
     };
-  }, [refreshSiswaList]);
+  }, [refreshAll]);
 
-  const handleResetNilai = useCallback((siswaId: string) => {
-    daftarMateri.forEach((m) => sessionStorage.removeItem(hasilKey(siswaId, m.id)));
-  }, []);
+  const handleResetNilai = useCallback(async (siswaId: string) => {
+    daftarMateri.forEach((m) => {
+      try { sessionStorage.removeItem(hasilKey(siswaId, m.id)); } catch { /* ignore */ }
+    });
+    const results = await Promise.allSettled(
+      daftarMateri.map((m) => deleteHasil(siswaId, m.id))
+    );
+    const failed = results.filter((r) => r.status === 'rejected');
+    if (failed.length > 0) {
+      console.warn('[admin] Reset nilai gagal pada beberapa topik:', failed);
+      if (typeof window !== 'undefined') {
+        window.alert(
+          `Reset nilai gagal pada ${failed.length} topik. ` +
+          'Sebagian data masih tersimpan di server. Periksa koneksi internet & coba lagi.'
+        );
+      }
+    }
+    await refreshAll(true);
+  }, [refreshAll]);
 
-  const getHasil = useCallback((siswaId: string, topicId: string): HasilSiswa => {
-    try {
-      const raw = sessionStorage.getItem(hasilKey(siswaId, topicId));
-      if (raw) {
-        const data = JSON.parse(raw) as HasilSiswa & { score: number; total: number; timeTaken: number };
+  const getHasil = useCallback(
+    (siswaId: string, topicId: string): HasilSiswa => {
+      const cloud = hasilMap[`${siswaId}-${topicId}`];
+      if (cloud) {
         return {
-          score: data.score,
-          total: data.total,
-          totalSkor: data.totalSkor ?? data.total * 10,
-          skorDiperoleh: data.skorDiperoleh ?? data.score * 10,
-          timeTaken: data.timeTaken,
-          answers: data.answers,
-          essayImages: data.essayImages,
-          submitted: data.submitted,
+          score: cloud.score,
+          total: cloud.total,
+          totalSkor: cloud.totalSkor,
+          skorDiperoleh: cloud.skorDiperoleh,
+          timeTaken: cloud.timeTaken,
+          answers: cloud.answers,
+          essayImages: cloud.essayImageUrls,
+          submitted: cloud.submitted,
+          submittedAt: cloud.submittedAt,
           done: true,
         };
       }
-    } catch { /* ignore */ }
-    return { score: 0, total: 15, totalSkor: 0, skorDiperoleh: 0, timeTaken: 0, done: false };
-  }, []);
+      // Fallback: sessionStorage (kalau guru kebetulan login di device yang sama)
+      try {
+        const raw = sessionStorage.getItem(hasilKey(siswaId, topicId));
+        if (raw) {
+          const data = JSON.parse(raw) as Partial<HasilSiswa> & { score: number; total: number; timeTaken: number };
+          return {
+            score: data.score,
+            total: data.total,
+            totalSkor: data.totalSkor ?? data.total * 10,
+            skorDiperoleh: data.skorDiperoleh ?? data.score * 10,
+            timeTaken: data.timeTaken,
+            answers: data.answers,
+            essayImages: data.essayImages,
+            submitted: data.submitted,
+            done: true,
+          };
+        }
+      } catch { /* ignore */ }
+      return { score: 0, total: 15, totalSkor: 0, skorDiperoleh: 0, timeTaken: 0, done: false };
+    },
+    [hasilMap]
+  );
 
   useEffect(() => {
     if (!user || user.role !== 'guru') {
@@ -131,15 +185,12 @@ export default function AdminPage() {
   let totalPossible = 0;
   siswaList.forEach((s) => {
     daftarMateri.forEach((m) => {
-      try {
-        const raw = sessionStorage.getItem(hasilKey(s.id, m.id));
-        if (raw) {
-          const data = JSON.parse(raw) as { score: number; total: number };
-          totalDone++;
-          totalScore += data.score;
-          totalPossible += data.total;
-        }
-      } catch { /* ignore */ }
+      const h = getHasil(s.id, m.id);
+      if (h.done) {
+        totalDone++;
+        totalScore += h.score;
+        totalPossible += h.total;
+      }
     });
   });
   const avgScore = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
@@ -224,7 +275,7 @@ export default function AdminPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Users size={20} /> Rekap Nilai Siswa
-            <button className={styles.refreshBtn} onClick={() => void refreshSiswaList(true)} title="Muat ulang daftar siswa" disabled={loadingSiswa}>
+            <button className={styles.refreshBtn} onClick={() => void refreshAll(true)} title="Muat ulang daftar siswa & hasil" disabled={loadingSiswa}>
               <RotateCcw size={14} className={loadingSiswa ? styles.spinning : undefined} />
               {loadingSiswa ? 'Memuat...' : 'Refresh'}
             </button>
@@ -330,7 +381,7 @@ export default function AdminPage() {
                         const hasil = getHasil(siswa.id, materi.id);
                         const topicKey = `${siswa.id}-${materi.id}`;
                         const isTopicOpen = expandedTopic === topicKey;
-                        const soalList = soalPerTopik[materi.id]?.slice(0, 15) ?? [];
+                        const soalList = buildSoalList(materi.id);
 
                         return (
                           <div key={materi.id} className={styles.jawabanTopic}>
@@ -402,6 +453,16 @@ export default function AdminPage() {
                                         <div className={styles.gambarWrap}>
                                           <div className={styles.gambarLabel}>
                                             <Image size={14} /> Jawaban Tulisan Tangan
+                                            {gambar.startsWith('http') && (
+                                              <a
+                                                href={gambar}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className={styles.gambarLink}
+                                              >
+                                                <ExternalLink size={12} /> Buka penuh
+                                              </a>
+                                            )}
                                           </div>
                                           <img
                                             src={gambar}

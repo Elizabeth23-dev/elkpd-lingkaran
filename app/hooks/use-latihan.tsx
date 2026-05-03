@@ -1,12 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
-import { soalPerTopik } from "~/data/materi";
+import { buildSoalList } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
-
-/** Jumlah soal berpikir-kritis per sesi */
-const MAX_BERPIKIR_KRITIS = 1;
-/** Jumlah soal pilihan-ganda per sesi */
-const MAX_PILIHAN_GANDA = 14;
+import { uploadImageToImgBB, isImgBBConfigured } from "~/data/image-upload";
+import { pushHasil } from "~/data/result-storage";
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
@@ -60,12 +57,9 @@ export function useLatihan(topicId: string) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
-  // 1 soal berpikir-kritis di urutan pertama, diikuti 14 soal pilihan-ganda
-  const soalList = [
-    ...allSoal.filter((s) => s.tipe === 'berpikir-kritis').slice(0, MAX_BERPIKIR_KRITIS),
-    ...allSoal.filter((s) => s.tipe !== 'berpikir-kritis').slice(0, MAX_PILIHAN_GANDA),
-  ];
+  // Urutan: 1 soal berpikir-kritis dulu, baru pilihan-ganda. Helper dibagi
+  // dengan admin & halaman hasil siswa agar indeks jawaban konsisten.
+  const soalList = buildSoalList(topicId);
 
   // Inisialisasi state dari progress yang tersimpan (jika ada)
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -90,6 +84,8 @@ export function useLatihan(topicId: string) {
     return soalList[savedIndex]?.waktu ?? 90;
   });
   const [isFinished, setIsFinished] = useState(false);
+  const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(
     user ? (loadProgress(user.id, topicId)?.startTime ?? Date.now()) : Date.now()
   );
@@ -212,7 +208,10 @@ export function useLatihan(topicId: string) {
   /** Dibungkus dalam ref agar bisa dipanggil dari dalam effect timer tanpa stale closure */
   const handleSelesaiRef = useRef<() => void>(() => {});
 
-  const handleSelesai = useCallback(() => {
+  const handleSelesai = useCallback(async () => {
+    if (isSubmittingFinal) return;
+    setIsSubmittingFinal(true);
+    setSubmitError(null);
     setIsFinished(true);
     if (user) clearProgress(user.id, topicId);
 
@@ -235,6 +234,7 @@ export function useLatihan(topicId: string) {
       { score: 0, totalSkor: 0, skorDiperoleh: 0 }
     );
 
+    // Simpan dulu ke sessionStorage agar halaman /hasil bisa langsung baca
     const resultData = {
       topicId,
       answers,
@@ -247,8 +247,64 @@ export function useLatihan(topicId: string) {
       timeTaken,
     };
     if (user) sessionStorage.setItem(hasilKey(user.id, topicId), JSON.stringify(resultData));
+
+    // Upload gambar essay ke ImgBB (paralel) — hanya jika dikonfigurasi
+    const essayImageUrls: Record<number, string> = {};
+    if (user && isImgBBConfigured()) {
+      const uploadEntries = Object.entries(essayImages);
+      const uploadResults = await Promise.all(
+        uploadEntries.map(async ([idx, base64]) => {
+          const r = await uploadImageToImgBB(base64);
+          return [Number(idx), r?.url ?? null] as const;
+        })
+      );
+      for (const [idx, url] of uploadResults) {
+        if (url) essayImageUrls[idx] = url;
+      }
+    }
+
+    // Push hasil (tanpa base64) ke JSONBin agar admin bisa lihat dari device manapun
+    let cloudFailed = false;
+    if (user) {
+      try {
+        await pushHasil({
+          id: `${user.id}-${topicId}`,
+          siswaId: user.id,
+          siswaName: user.name,
+          topicId,
+          score,
+          total: soalList.length,
+          totalSkor,
+          skorDiperoleh,
+          timeTaken,
+          answers,
+          submitted,
+          essayImageUrls,
+          submittedAt: Date.now(),
+        });
+      } catch (err) {
+        console.warn('[use-latihan] Cloud push gagal (data tetap tersimpan lokal):', err);
+        cloudFailed = true;
+        setSubmitError(
+          'Sinkron ke admin gagal — periksa koneksi internet. Hasil sudah tersimpan di perangkatmu, ' +
+          'tapi mungkin belum terlihat oleh guru. Mohon laporkan ke guru.'
+        );
+      }
+    }
+
+    setIsSubmittingFinal(false);
+
+    // Kalau cloud gagal, tahan navigasi sebentar (lewat alert blocking) supaya
+    // siswa benar-benar membaca peringatannya. Kalau sukses, langsung pindah.
+    if (cloudFailed && typeof window !== 'undefined') {
+      window.alert(
+        'Hasil sudah disimpan di perangkat ini, tapi sinkronisasi ke server gagal.\n\n' +
+        'Guru mungkin belum bisa melihat hasil pengerjaanmu sampai koneksi pulih. ' +
+        'Mohon laporkan kepada guru.'
+      );
+    }
     navigate(`/hasil/${topicId}`);
-  }, [topicId, answers, submitted, essayImages, soalList, navigate, user]);
+  }, [topicId, answers, submitted, essayImages, soalList, navigate, user, isSubmittingFinal]);
 
   // Sinkronisasi ref setiap handleSelesai berubah
   handleSelesaiRef.current = handleSelesai;
@@ -261,6 +317,8 @@ export function useLatihan(topicId: string) {
     isSubmitted,
     soalTimeLeft,
     currentEssayImage,
+    isSubmittingFinal,
+    submitError,
     handleSelectAnswer,
     handleEssayImageUpload,
     handleSubmit,

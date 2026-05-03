@@ -1,7 +1,7 @@
 import { BookOpen, TrendingUp, RotateCcw, Star } from "lucide-react";
 import { Link } from "react-router";
 import classnames from "classnames";
-import { soalPerTopik, daftarMateri } from "~/data/materi";
+import { buildSoalList, daftarMateri } from "~/data/materi";
 import type { HasilData } from "~/hooks/use-hasil";
 import styles from "./saran-perbaikan.module.css";
 
@@ -11,7 +11,7 @@ export interface SaranPerbaikanProps {
 }
 
 export function SaranPerbaikan({ className, hasil }: SaranPerbaikanProps) {
-  const soalList = soalPerTopik[hasil.topicId] ?? soalPerTopik['definisi-unsur'];
+  const soalList = buildSoalList(hasil.topicId);
   const percentage = Math.round((hasil.score / hasil.total) * 100);
 
   const wrongSoal = soalList.filter((_, idx) => hasil.answers[idx] !== soalList[idx].jawabanBenar);

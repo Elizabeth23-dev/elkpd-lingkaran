@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { ChevronLeft, ChevronRight, Flag, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag, BookOpen, Loader2 } from "lucide-react";
 import classnames from "classnames";
 import styles from "./navigasi-latihan.module.css";
 
@@ -12,6 +12,7 @@ export interface NavigasiLatihanProps {
   isSubmitted: boolean;
   isEssay?: boolean;
   essayImageUploaded?: boolean;
+  isSubmittingFinal?: boolean;
   onPrev: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -27,6 +28,7 @@ export function NavigasiLatihan({
   isSubmitted,
   isEssay = false,
   essayImageUploaded = false,
+  isSubmittingFinal = false,
   onPrev,
   onNext,
   onSubmit,
@@ -59,9 +61,22 @@ export function NavigasiLatihan({
                 {isEssay ? 'Kumpulkan Jawaban' : 'Cek Jawaban'}
               </button>
             ) : isLast ? (
-              <button onClick={onSelesai} className={styles.selesaiBtn}>
-                <Flag size={16} />
-                <span>Selesai & Lihat Hasil</span>
+              <button
+                onClick={onSelesai}
+                className={styles.selesaiBtn}
+                disabled={isSubmittingFinal}
+              >
+                {isSubmittingFinal ? (
+                  <>
+                    <Loader2 size={16} className={styles.spin} />
+                    <span>Menyimpan ke server…</span>
+                  </>
+                ) : (
+                  <>
+                    <Flag size={16} />
+                    <span>Selesai & Lihat Hasil</span>
+                  </>
+                )}
               </button>
             ) : (
               <button onClick={onNext} className={styles.nextBtn}>
