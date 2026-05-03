@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { buildSoalList } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 import { uploadImageToImgBB, isImgBBConfigured } from "~/data/image-upload";
-import { pushHasil } from "~/data/result-storage";
+import { pushHasil, reconcileLocalHasil } from "~/data/result-storage";
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
@@ -98,33 +98,46 @@ export function useLatihan(topicId: string) {
   const initializedTopicRef = useRef<string | null>(null);
   useEffect(() => {
     if (!user) return;
-    if (user.role === 'siswa' && sudahSelesai(user.id, topicId)) {
-      navigate(`/hasil/${topicId}`, { replace: true });
-      return;
-    }
-    // Hanya reset jika topicId berubah (bukan re-render biasa)
-    if (initializedTopicRef.current === topicId) return;
-    initializedTopicRef.current = topicId;
+    let cancelled = false;
+    (async () => {
+      // Sinkron dengan cloud dulu — kalau guru sudah reset nilai siswa via /admin,
+      // hapus sessionStorage hasil/progress yang basi sebelum cek sudahSelesai.
+      if (user.role === 'siswa') {
+        try {
+          await reconcileLocalHasil(user.id);
+        } catch { /* ignore */ }
+      }
+      if (cancelled) return;
 
-    const saved = loadProgress(user.id, topicId);
-    if (saved) {
-      // Restore dari progress tersimpan
-      setCurrentIndex(saved.currentIndex);
-      setAnswers(saved.answers);
-      setSubmitted(saved.submitted);
-      setEssayImages(saved.essayImages);
-      setSoalTimeLeft(soalList[saved.currentIndex]?.waktu ?? 90);
-      startTimeRef.current = saved.startTime;
-    } else {
-      // Mulai sesi baru
-      setCurrentIndex(0);
-      setAnswers({});
-      setSubmitted({});
-      setEssayImages({});
-      setSoalTimeLeft(soalList[0]?.waktu ?? 90);
-      setIsFinished(false);
-      startTimeRef.current = Date.now();
-    }
+      if (user.role === 'siswa' && sudahSelesai(user.id, topicId)) {
+        navigate(`/hasil/${topicId}`, { replace: true });
+        return;
+      }
+      // Hanya reset jika topicId berubah (bukan re-render biasa)
+      if (initializedTopicRef.current === topicId) return;
+      initializedTopicRef.current = topicId;
+
+      const saved = loadProgress(user.id, topicId);
+      if (saved) {
+        // Restore dari progress tersimpan
+        setCurrentIndex(saved.currentIndex);
+        setAnswers(saved.answers);
+        setSubmitted(saved.submitted);
+        setEssayImages(saved.essayImages);
+        setSoalTimeLeft(soalList[saved.currentIndex]?.waktu ?? 90);
+        startTimeRef.current = saved.startTime;
+      } else {
+        // Mulai sesi baru
+        setCurrentIndex(0);
+        setAnswers({});
+        setSubmitted({});
+        setEssayImages({});
+        setSoalTimeLeft(soalList[0]?.waktu ?? 90);
+        setIsFinished(false);
+        startTimeRef.current = Date.now();
+      }
+    })();
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId, user]);
 
