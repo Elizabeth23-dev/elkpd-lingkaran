@@ -1,16 +1,15 @@
 /**
- * Cloud storage service menggunakan JSONBin.io v3.
+ * Cloud storage service menggunakan Supabase (tabel `cloud_users`).
  * Data siswa disimpan di cloud sehingga bisa diakses dari device manapun.
  *
- * Prioritas konfigurasi:
- * 1. localStorage manual key (set dari halaman /debug-cloud)
- * 2. import.meta.env.VITE_JSONBIN_* (di-embed saat build)
+ * Migrasi dari JSONBin: API publik modul ini (`fetchCloudUsers`,
+ * `saveCloudUsers`, `invalidateCloudCache`) tetap dipertahankan supaya
+ * call site (`auth.ts`, `use-auth.tsx`, `admin.tsx`, dll.) tidak perlu
+ * banyak berubah. Konfigurasi Supabase di-handle di `supabase-client.ts`.
  */
 
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
+import { getSupabase, isSupabaseConfigured } from './supabase-client';
 
-const MANUAL_KEY_STORE = 'elkpd-manual-api-key';
-const MANUAL_BIN_STORE = 'elkpd-manual-bin-id';
 const LOCAL_FALLBACK_KEY = 'elkpd-registered-users';
 const CACHE_KEY = 'elkpd-cloud-cache';
 const CACHE_TTL = 15_000; // 15 detik
@@ -24,54 +23,40 @@ export interface CloudUser {
   createdAt: number;
 }
 
-interface CloudData {
-  users: CloudUser[];
-}
-
 interface CacheEntry {
   data: CloudUser[];
   ts: number;
 }
 
-/** Ambil API key aktif (manual override > env var) */
-export function getActiveApiKey(): string {
-  try {
-    const manual = localStorage.getItem(MANUAL_KEY_STORE);
-    if (manual) return manual;
-  } catch { /* ignore */ }
-  return (import.meta.env.VITE_JSONBIN_API_KEY as string) ?? '';
+interface SupabaseCloudUserRow {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  kelas: string;
+  created_at: string;
 }
 
-/** Ambil BIN ID aktif (manual override > env var) */
-export function getActiveBinId(): string {
-  try {
-    const manual = localStorage.getItem(MANUAL_BIN_STORE);
-    if (manual) return manual;
-  } catch { /* ignore */ }
-  return (import.meta.env.VITE_JSONBIN_BIN_ID as string) ?? '';
+function rowToCloudUser(row: SupabaseCloudUserRow): CloudUser {
+  return {
+    id: row.id,
+    name: row.name,
+    username: row.username,
+    password: row.password,
+    kelas: row.kelas,
+    createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+  };
 }
 
-/** Simpan API key & BIN ID secara manual (untuk semua device yang buka halaman debug) */
-export function setManualCredentials(apiKey: string, binId: string): void {
-  try {
-    localStorage.setItem(MANUAL_KEY_STORE, apiKey);
-    localStorage.setItem(MANUAL_BIN_STORE, binId);
-    invalidateCache();
-  } catch { /* ignore */ }
-}
-
-/** Hapus manual credentials */
-export function clearManualCredentials(): void {
-  try {
-    localStorage.removeItem(MANUAL_KEY_STORE);
-    localStorage.removeItem(MANUAL_BIN_STORE);
-  } catch { /* ignore */ }
-}
-
-function isConfigured(): boolean {
-  const key = getActiveApiKey();
-  const bin = getActiveBinId();
-  return Boolean(key && bin);
+function cloudUserToRow(user: CloudUser): SupabaseCloudUserRow {
+  return {
+    id: user.id,
+    name: user.name,
+    username: user.username,
+    password: user.password,
+    kelas: user.kelas,
+    created_at: new Date(user.createdAt || Date.now()).toISOString(),
+  };
 }
 
 function getCache(): CloudUser[] | null {
@@ -104,41 +89,6 @@ export function invalidateCloudCache(): void {
   invalidateCache();
 }
 
-/** Ambil daftar user dari cloud. Fallback ke localStorage jika tidak terkonfigurasi. */
-export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]> {
-  if (!isConfigured()) {
-    console.warn('[cloud-storage] Tidak terkonfigurasi. Pakai localStorage fallback.');
-    return getLocalFallback();
-  }
-
-  if (!bypassCache) {
-    const cached = getCache();
-    if (cached) return cached;
-  }
-
-  const apiKey = getActiveApiKey();
-  const binId = getActiveBinId();
-
-  try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
-      headers: {
-        'X-Master-Key': apiKey,
-        'X-Bin-Meta': 'false',
-        'Cache-Control': 'no-cache',
-      },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = (await res.json()) as CloudData;
-    const users = Array.isArray(data.users) ? data.users : [];
-    console.info(`[cloud-storage] Berhasil fetch ${users.length} users dari JSONBin`);
-    setCache(users);
-    return users;
-  } catch (err) {
-    console.warn('[cloud-storage] Gagal fetch dari cloud, pakai localStorage:', err);
-    return getLocalFallback();
-  }
-}
-
 function getLocalFallback(): CloudUser[] {
   try {
     const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);
@@ -148,49 +98,75 @@ function getLocalFallback(): CloudUser[] {
   }
 }
 
-/** Simpan daftar user ke cloud. Tetap mempertahankan data lain (hasil, dll). */
-export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
-  // Selalu simpan ke localStorage sebagai backup
+function writeLocalFallback(users: CloudUser[]): void {
   try {
     localStorage.setItem(LOCAL_FALLBACK_KEY, JSON.stringify(users));
     window.dispatchEvent(new StorageEvent('storage', { key: LOCAL_FALLBACK_KEY }));
   } catch { /* ignore */ }
+}
 
-  if (!isConfigured()) return;
+/** Ambil daftar user dari cloud. Fallback ke localStorage jika tidak terkonfigurasi atau gagal. */
+export async function fetchCloudUsers(bypassCache = false): Promise<CloudUser[]> {
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured()) {
+    console.warn('[cloud-storage] Supabase belum dikonfigurasi. Pakai localStorage fallback.');
+    return getLocalFallback();
+  }
 
-  const apiKey = getActiveApiKey();
-  const binId = getActiveBinId();
+  if (!bypassCache) {
+    const cached = getCache();
+    if (cached) return cached;
+  }
 
   try {
-    // Fetch dulu agar key lain (mis. `hasil`) tidak terhapus saat PUT.
-    // PENTING: kalau GET gagal, kita abort — jangan PUT, karena body { users }
-    // akan menimpa key `hasil` jadi kosong (data nilai semua siswa hilang).
-    const getRes = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
-      headers: {
-        'X-Master-Key': apiKey,
-        'X-Bin-Meta': 'false',
-        'Cache-Control': 'no-cache',
-      },
-    });
-    if (!getRes.ok) {
-      throw new Error(`Prefetch bin gagal: HTTP ${getRes.status}`);
-    }
-    const existingBin = (await getRes.json()) as Record<string, unknown>;
+    const { data, error } = await supabase
+      .from('cloud_users')
+      .select('id, name, username, password, kelas, created_at')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    const users = (data ?? []).map((row) => rowToCloudUser(row as SupabaseCloudUserRow));
+    console.info(`[cloud-storage] Berhasil fetch ${users.length} users dari Supabase`);
+    setCache(users);
+    // Backup juga ke localStorage supaya offline tetap kebaca.
+    writeLocalFallback(users);
+    return users;
+  } catch (err) {
+    console.warn('[cloud-storage] Gagal fetch dari Supabase, pakai localStorage:', err);
+    return getLocalFallback();
+  }
+}
 
-    const res = await fetch(`${JSONBIN_BASE}/b/${binId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': apiKey,
-      },
-      body: JSON.stringify({ ...existingBin, users }),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    console.info(`[cloud-storage] Berhasil simpan ${users.length} users ke JSONBin`);
+/**
+ * Simpan daftar user ke cloud. Implementasi melakukan diff vs row yang sudah ada
+ * dan hanya melakukan INSERT untuk user baru — tidak menyentuh row lain
+ * (misal hasil pengerjaan di tabel `cloud_hasil`).
+ *
+ * API tetap menerima full array `users` agar backward-compatible dengan
+ * call site yang sudah ada (`registerSiswa` di `auth.ts`).
+ */
+export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
+  // Selalu simpan ke localStorage sebagai backup, terlepas dari status cloud.
+  writeLocalFallback(users);
+
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured()) return;
+
+  // Upsert berdasarkan primary key (id). Idempoten: kalau user dengan id sama
+  // sudah ada, akan di-update (data CloudUser tidak punya field yang berubah,
+  // jadi practically no-op).
+  const rows = users.map(cloudUserToRow);
+  if (rows.length === 0) return;
+
+  try {
+    const { error } = await supabase
+      .from('cloud_users')
+      .upsert(rows, { onConflict: 'id' });
+    if (error) throw error;
+    console.info(`[cloud-storage] Berhasil simpan ${rows.length} users ke Supabase`);
     invalidateCache();
     setCache(users);
   } catch (err) {
-    console.warn('[cloud-storage] Gagal simpan ke cloud:', err);
+    console.warn('[cloud-storage] Gagal simpan ke Supabase:', err);
     throw err;
   }
 }

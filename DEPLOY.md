@@ -5,6 +5,32 @@ Project ini sudah dikonfigurasi untuk custom domain (bukan GitHub Pages sub-path
 - `vite.config.ts` menggunakan `base: "/"` (root domain)
 - File `public/CNAME` berisi nama domain Anda
 
+## Setup Backend (Supabase)
+Sejak migrasi dari JSONBin, data siswa & hasil latihan disimpan di Supabase.
+Sebelum deploy, pastikan:
+
+1. Buat project di https://supabase.com (free tier cukup).
+2. Jalankan SQL skema di Supabase Dashboard → **SQL Editor** → paste isi file
+   `supabase/migrations/0001_init_cloud_users_and_hasil.sql` → **Run**.
+3. Catat dua hal dari **Project Settings → API**:
+   - **Project URL** (e.g. `https://xxxx.supabase.co`)
+   - **anon public key**
+4. Tambahkan keduanya sebagai **GitHub Repository Secrets**:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   (Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**)
+5. (Opsional, sekali jalan) Migrasi data lama dari JSONBin:
+   ```bash
+   JSONBIN_API_KEY=xxx \
+   JSONBIN_BIN_ID=xxx \
+   SUPABASE_URL=https://xxxx.supabase.co \
+   SUPABASE_SERVICE_ROLE_KEY=xxx \
+     node scripts/migrate-jsonbin-to-supabase.mjs
+   ```
+   Service role key didapat dari **Settings → API → service_role**. JANGAN di-commit
+   atau di-set sebagai GitHub Actions secret `VITE_*` — service_role hanya untuk
+   skrip migrasi lokal.
+
 ## Langkah Setup
 
 ### 1. Beli Domain

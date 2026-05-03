@@ -1,0 +1,16 @@
+Tambahkan blok berikut secara MANUAL ke .github/workflows/deploy.yml
+(blok `env:` di bawah `- name: Build`, tepat sebelum `run: npm run build`):
+
+      - name: Build
+        env:
+          # Supabase: Anon key aman di-bundle (dilindungi RLS).
+          # Tambahkan kedua secret ini di GitHub repo Settings → Secrets → Actions.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # ImgBB tetap dipakai untuk upload gambar essay.
+          VITE_IMGBB_API_KEY: ${{ secrets.VITE_IMGBB_API_KEY }}
+        run: npm run build
+
+Catatan: Devin tidak bisa push perubahan workflow file karena keterbatasan
+scope OAuth App. Edit manual via GitHub web atau push dari local clone Anda
+yang punya `workflow` scope.
