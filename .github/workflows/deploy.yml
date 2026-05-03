@@ -31,13 +31,6 @@ jobs:
         run: npm ci
 
       - name: Build
-        env:
-          # Supabase: Anon key aman di-bundle (dilindungi RLS).
-          # Tambahkan kedua secret ini di GitHub repo Settings → Secrets → Actions.
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # ImgBB tetap dipakai untuk upload gambar essay.
-          VITE_IMGBB_API_KEY: ${{ secrets.VITE_IMGBB_API_KEY }}
         run: npm run build
 
       - name: Buat 404.html dengan SPA redirect
