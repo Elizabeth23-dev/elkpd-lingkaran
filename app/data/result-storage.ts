@@ -238,9 +238,14 @@ export async function reconcileLocalHasil(siswaId: string): Promise<void> {
   if (!isConfigured()) return;
   if (typeof window === 'undefined') return;
 
+  // Catatan: panggil fetchBin() langsung supaya error network bisa propagate.
+  // fetchAllHasil() internal-fallback ke localStorage saat cloud gagal — kalau
+  // dipakai di sini, kita bisa salah anggap "cloud kosong" padahal sebenarnya
+  // offline, lalu menghapus sessionStorage hasil siswa secara keliru.
   let cloudHasil: CloudHasil[];
   try {
-    cloudHasil = await fetchAllHasil(true);
+    const bin = await fetchBin();
+    cloudHasil = Array.isArray(bin.hasil) ? bin.hasil : [];
   } catch {
     return; // gagal fetch → biarkan local apa adanya
   }
