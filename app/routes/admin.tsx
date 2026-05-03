@@ -108,9 +108,19 @@ export default function AdminPage() {
     daftarMateri.forEach((m) => {
       try { sessionStorage.removeItem(hasilKey(siswaId, m.id)); } catch { /* ignore */ }
     });
-    await Promise.all(
-      daftarMateri.map((m) => deleteHasil(siswaId, m.id).catch(() => undefined))
+    const results = await Promise.allSettled(
+      daftarMateri.map((m) => deleteHasil(siswaId, m.id))
     );
+    const failed = results.filter((r) => r.status === 'rejected');
+    if (failed.length > 0) {
+      console.warn('[admin] Reset nilai gagal pada beberapa topik:', failed);
+      if (typeof window !== 'undefined') {
+        window.alert(
+          `Reset nilai gagal pada ${failed.length} topik. ` +
+          'Sebagian data masih tersimpan di server. Periksa koneksi internet & coba lagi.'
+        );
+      }
+    }
     await refreshAll(true);
   }, [refreshAll]);
 

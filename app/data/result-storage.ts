@@ -200,6 +200,7 @@ export async function deleteHasil(siswaId: string, topicId: string): Promise<voi
 
   if (!isConfigured()) return;
 
+  let lastErr: unknown;
   for (let attempt = 1; attempt <= MAX_PUSH_RETRY; attempt++) {
     try {
       const bin = await fetchBin();
@@ -211,10 +212,12 @@ export async function deleteHasil(siswaId: string, topicId: string): Promise<voi
       setCache(filtered);
       return;
     } catch (err) {
+      lastErr = err;
       console.warn(`[result-storage] Delete gagal (attempt ${attempt}/${MAX_PUSH_RETRY}):`, err);
       if (attempt < MAX_PUSH_RETRY) {
         await new Promise((r) => setTimeout(r, 200 * attempt));
       }
     }
   }
+  throw lastErr ?? new Error(`Delete hasil gagal setelah ${MAX_PUSH_RETRY} retry`);
 }

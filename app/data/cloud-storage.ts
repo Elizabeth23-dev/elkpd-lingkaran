@@ -162,20 +162,20 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
   const binId = getActiveBinId();
 
   try {
-    // Fetch dulu agar key lain (mis. `hasil`) tidak terhapus.
-    let existingBin: Record<string, unknown> = {};
-    try {
-      const getRes = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
-        headers: {
-          'X-Master-Key': apiKey,
-          'X-Bin-Meta': 'false',
-          'Cache-Control': 'no-cache',
-        },
-      });
-      if (getRes.ok) {
-        existingBin = (await getRes.json()) as Record<string, unknown>;
-      }
-    } catch { /* ignore — tetap PUT di bawah */ }
+    // Fetch dulu agar key lain (mis. `hasil`) tidak terhapus saat PUT.
+    // PENTING: kalau GET gagal, kita abort — jangan PUT, karena body { users }
+    // akan menimpa key `hasil` jadi kosong (data nilai semua siswa hilang).
+    const getRes = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
+      headers: {
+        'X-Master-Key': apiKey,
+        'X-Bin-Meta': 'false',
+        'Cache-Control': 'no-cache',
+      },
+    });
+    if (!getRes.ok) {
+      throw new Error(`Prefetch bin gagal: HTTP ${getRes.status}`);
+    }
+    const existingBin = (await getRes.json()) as Record<string, unknown>;
 
     const res = await fetch(`${JSONBIN_BASE}/b/${binId}`, {
       method: 'PUT',
@@ -191,5 +191,6 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
     setCache(users);
   } catch (err) {
     console.warn('[cloud-storage] Gagal simpan ke cloud:', err);
+    throw err;
   }
 }

@@ -167,7 +167,15 @@ export async function registerSiswa(payload: RegisterPayload): Promise<RegisterR
     createdAt: Date.now(),
   };
 
-  await saveCloudUsers([...cloudUsers, newCloudUser]);
+  try {
+    await saveCloudUsers([...cloudUsers, newCloudUser]);
+  } catch (err) {
+    console.warn('[auth] registerSiswa: gagal simpan ke cloud', err);
+    return {
+      ok: false,
+      error: 'Gagal menyimpan akun ke server. Periksa koneksi internet, lalu coba lagi.',
+    };
+  }
 
   const newUser: User = cloudUserToUser(newCloudUser);
   return { ok: true, user: newUser };
