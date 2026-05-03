@@ -22,9 +22,15 @@ interface ProgressData {
   startTime: number;
 }
 
+// Progress disimpan di localStorage supaya tahan terhadap refresh, tab
+// ditutup, atau browser ditutup — siswa yang tidak sengaja kepencet refresh
+// (atau HP-nya restart) bisa lanjut dari soal terakhir, bukan ulang dari awal.
+// sessionStorage juga dibaca sebagai fallback supaya progress lama (sebelum
+// migrasi ini) tidak hilang.
 function loadProgress(siswaId: string, topicId: string): ProgressData | null {
+  const key = progressKey(siswaId, topicId);
   try {
-    const raw = sessionStorage.getItem(progressKey(siswaId, topicId));
+    const raw = localStorage.getItem(key) ?? sessionStorage.getItem(key);
     return raw ? (JSON.parse(raw) as ProgressData) : null;
   } catch {
     return null;
@@ -33,14 +39,14 @@ function loadProgress(siswaId: string, topicId: string): ProgressData | null {
 
 function saveProgress(siswaId: string, topicId: string, data: ProgressData) {
   try {
-    sessionStorage.setItem(progressKey(siswaId, topicId), JSON.stringify(data));
+    localStorage.setItem(progressKey(siswaId, topicId), JSON.stringify(data));
   } catch { /* ignore */ }
 }
 
 function clearProgress(siswaId: string, topicId: string) {
-  try {
-    sessionStorage.removeItem(progressKey(siswaId, topicId));
-  } catch { /* ignore */ }
+  const key = progressKey(siswaId, topicId);
+  try { localStorage.removeItem(key); } catch { /* ignore */ }
+  try { sessionStorage.removeItem(key); } catch { /* ignore */ }
 }
 
 /** Cek apakah siswa sudah menyelesaikan latihan untuk topik ini */
