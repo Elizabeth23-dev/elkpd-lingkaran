@@ -286,10 +286,10 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
     {
       id: 21,
       tipe: 'berpikir-kritis',
-      pertanyaan: 'Sebuah sprinkler (alat penyiram) air berputar membentuk sudut pusat 90° dan menjangkau jarak 21 meter. Seorang petani ingin mengetahui apakah luas lahan yang disiram sudah mencukupi 400 m².\n\na. Hitunglah panjang busur jangkauan sprinkler! (π = 22/7)\n\nb. Hitunglah luas juring yang disiram! (π = 22/7)\n\nc. Apakah luas lahan yang disiram sudah mencukupi 400 m²?\n\nd. Mengapa area yang disiram berbentuk juring, bukan lingkaran penuh?\n\ne. Jika luas masih kurang, mana yang lebih efektif ditingkatkan: sudut pusat atau jangkauan (jari-jari)? Berikan alasanmu!',
+      pertanyaan: 'Sebuah sprinkler berputar membentuk sudut pusat 90° dan menjangkau 21 meter. Petani ingin tahu apakah luas siramannya cukup 400 m².\n\na. Apa saja yang perlu dihitung untuk menjawab pertanyaan petani?\n\nb. Tuliskan data yang diketahui dari soal.\n\nc. Hitunglah panjang busur dan luas juring sapuan sprinkler! (π = 22/7)\n\nd. Mengapa area yang disiram berbentuk juring? Jelaskan secara geometris.\n\ne. Apakah luas siraman cukup 400 m²? Jika tidak, apa solusinya?',
       pilihan: [],
       jawabanBenar: -1,
-      penjelasan: '(a) Panjang busur = (90/360) × 2 × (22/7) × 21 = (1/4) × 132 = 33 m.\n(b) Luas juring = (90/360) × (22/7) × 21² = (1/4) × 1386 = 346,5 m².\n(c) Tidak mencukupi, karena 346,5 m² < 400 m².\n(d) Area berbentuk juring karena sprinkler berputar dari satu titik pusat membentuk sudut 90°, dibatasi dua jari-jari dan busur. Jika sudut pusat = 360°, barulah membentuk lingkaran penuh.\n(e) Meningkatkan jari-jari lebih efisien, karena luas juring ∝ r² (kuadratik) sedangkan terhadap sudut hanya linear. Contoh: r = 28 m → luas = (1/4) × (22/7) × 784 = 616 m². Meningkatkan r memberikan dampak lebih besar.',
+      penjelasan: '(a) Yang perlu dihitung: panjang busur dan luas juring sapuan sprinkler, lalu dibandingkan dengan target 400 m².\n(b) Data: sudut pusat α = 90°, jari-jari r = 21 m, target = 400 m², π = 22/7.\n(c) Panjang busur l = (90/360) × 2 × (22/7) × 21 = (1/4) × 132 = 33 m. Luas juring L = (90/360) × (22/7) × 21² = (1/4) × 1386 = 346,5 m².\n(d) Sprinkler berputar dari satu titik (pusat) hanya pada sudut 90°, bukan 360° penuh. Areanya dibatasi dua jari-jari dan satu busur — itulah definisi juring.\n(e) Tidak cukup, karena 346,5 m² < 400 m². Solusi: perpanjang jari-jari (jangkauan), karena luas juring sebanding dengan r² — lebih efektif daripada memperbesar sudut yang hanya berbanding lurus.',
       kesulitan: 'sulit',
       skor: 25,
       waktu: 600,
@@ -297,10 +297,10 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
     {
       id: 22,
       tipe: 'berpikir-kritis',
-      pertanyaan: 'Sebuah sprinkler (alat penyiram) air berputar membentuk sudut pusat 60° dan menjangkau jarak 42 meter. Seorang petani ingin mengetahui apakah luas lahan yang disiram sudah mencukupi 800 m².\n\na. Hitunglah panjang busur jangkauan sprinkler! (π = 22/7)\n\nb. Hitunglah luas juring yang disiram! (π = 22/7)\n\nc. Apakah luas lahan yang disiram sudah mencukupi 800 m²?\n\nd. Mengapa area yang disiram berbentuk juring, bukan lingkaran penuh?\n\ne. Jika luas masih kurang, mana yang lebih efektif ditingkatkan: sudut pusat atau jangkauan (jari-jari)? Berikan alasanmu!',
+      pertanyaan: 'Sebuah sprinkler berputar membentuk sudut pusat 60° dan menjangkau 42 meter. Petani ingin tahu apakah luas siramannya cukup 800 m².\n\na. Apa saja yang perlu dihitung untuk menjawab pertanyaan petani?\n\nb. Tuliskan data yang diketahui dari soal.\n\nc. Hitunglah panjang busur dan luas juring sapuan sprinkler! (π = 22/7)\n\nd. Mengapa area yang disiram berbentuk juring? Jelaskan secara geometris.\n\ne. Apakah luas siraman cukup 800 m²? Jika tidak, apa solusinya?',
       pilihan: [],
       jawabanBenar: -1,
-      penjelasan: '(a) Panjang busur = (60/360) × 2 × (22/7) × 42 = (1/6) × 264 = 44 m.\n(b) Luas juring = (60/360) × (22/7) × 42² = (1/6) × 5544 = 924 m².\n(c) Sudah mencukupi, karena 924 m² > 800 m².\n(d) Area berbentuk juring karena sprinkler berputar dari satu titik pusat membentuk sudut 60°, dibatasi dua jari-jari dan busur. Jika sudut pusat = 360°, barulah membentuk lingkaran penuh.\n(e) Meningkatkan jari-jari lebih efisien, karena luas juring ∝ r² (kuadratik) sedangkan terhadap sudut hanya linear. Contoh: r = 56 m → luas = (1/6) × (22/7) × 3136 ≈ 1642,67 m². Meningkatkan r memberikan dampak lebih besar.',
+      penjelasan: '(a) Yang perlu dihitung: panjang busur dan luas juring sapuan sprinkler, lalu dibandingkan dengan target 800 m².\n(b) Data: sudut pusat α = 60°, jari-jari r = 42 m, target = 800 m², π = 22/7.\n(c) Panjang busur l = (60/360) × 2 × (22/7) × 42 = (1/6) × 264 = 44 m. Luas juring L = (60/360) × (22/7) × 42² = (1/6) × 5544 = 924 m².\n(d) Sprinkler berputar dari satu titik (pusat) hanya pada sudut 60°, bukan 360° penuh. Areanya dibatasi dua jari-jari dan satu busur — itulah definisi juring.\n(e) Sudah cukup, karena 924 m² > 800 m². Tidak perlu tindakan tambahan; namun jika target diperbesar, perpanjang jari-jari karena luas juring sebanding dengan r² — lebih efektif daripada memperbesar sudut.',
       kesulitan: 'sulit',
       skor: 25,
       waktu: 600,
@@ -853,13 +853,13 @@ di mana \u03b1 adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari l
     ],
     contoh: [
       {
-        soal: 'Sebuah sprinkler (alat penyiram) air berputar membentuk sudut pusat 120° dan menjangkau jarak 14 meter. Seorang petani ingin mengetahui apakah luas lahan yang disiram sudah mencukupi 600 m².\n\na. Hitunglah panjang busur jangkauan sprinkler! (π = 22/7)\n\nb. Hitunglah luas juring yang disiram! (π = 22/7)\n\nc. Apakah luas lahan yang disiram sudah mencukupi 600 m²?\n\nd. Mengapa area yang disiram berbentuk juring, bukan lingkaran penuh?\n\ne. Jika luas masih kurang, mana yang lebih efektif ditingkatkan: sudut pusat atau jangkauan (jari-jari)? Berikan alasanmu!',
+        soal: 'Sebuah sprinkler berputar membentuk sudut pusat 120° dan menjangkau 14 meter. Petani ingin tahu apakah luas siramannya cukup 600 m².\n\na. Apa saja yang perlu dihitung untuk menjawab pertanyaan petani?\n\nb. Tuliskan data yang diketahui dari soal.\n\nc. Hitunglah panjang busur dan luas juring sapuan sprinkler! (π = 22/7)\n\nd. Mengapa area yang disiram berbentuk juring? Jelaskan secara geometris.\n\ne. Apakah luas siraman cukup 600 m²? Jika tidak, apa solusinya?',
         solusi: [
-          '(a) Panjang busur = (120/360) × 2 × (22/7) × 14 = (1/3) × 88 = 29,33 m.',
-          '(b) Luas juring = (120/360) × (22/7) × 196 = (1/3) × 616 = 205,33 m².',
-          '(c) Tidak mencukupi, karena 205,33 m² < 600 m².',
-          '(d) Area berbentuk juring karena sprinkler berputar dari satu titik pusat membentuk sudut 120°, dibatasi dua jari-jari dan busur. Jika sudut pusat = 360°, barulah membentuk lingkaran penuh.',
-          '(e) Meningkatkan jari-jari lebih efisien, karena luas juring ∝ r² (kuadratik) sedangkan terhadap sudut hanya linear. Contoh: r = 21 m → luas = (1/3) × (22/7) × 441 = 462 m². Meningkatkan r memberikan dampak lebih besar.'
+          '(a) Yang perlu dihitung: panjang busur dan luas juring sapuan sprinkler, lalu dibandingkan dengan target 600 m².',
+          '(b) Data: sudut pusat α = 120°, jari-jari r = 14 m, target = 600 m², π = 22/7.',
+          '(c) Panjang busur l = (120/360) × 2 × (22/7) × 14 = (1/3) × 88 = 29,33 m. Luas juring L = (120/360) × (22/7) × 14² = (1/3) × 616 = 205,33 m².',
+          '(d) Sprinkler berputar dari satu titik (pusat) hanya pada sudut 120°, bukan 360° penuh. Areanya dibatasi dua jari-jari dan satu busur — itulah definisi juring.',
+          '(e) Tidak cukup, karena 205,33 m² < 600 m². Solusi: perpanjang jari-jari (jangkauan), karena luas juring sebanding dengan r² — lebih efektif daripada memperbesar sudut yang hanya berbanding lurus.'
         ],
       },
     ],
