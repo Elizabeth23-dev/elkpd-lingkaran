@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import classnames from "classnames";
-import { soalPerTopik } from "~/data/materi";
+import { buildSoalList } from "~/data/materi";
 import type { HasilData } from "~/hooks/use-hasil";
 import styles from "./tinjauan-jawaban.module.css";
 
@@ -11,7 +11,7 @@ export interface TinjauanJawabanProps {
 }
 
 export function TinjauanJawaban({ className, hasil }: TinjauanJawabanProps) {
-  const soalList = soalPerTopik[hasil.topicId] ?? soalPerTopik['definisi-unsur'];
+  const soalList = buildSoalList(hasil.topicId);
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggleExpand = (idx: number) => {

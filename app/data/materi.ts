@@ -972,3 +972,24 @@ Contoh: Lingkaran dengan jari-jari 7 cm memiliki keliling = 2 \u00d7 (22/7) \u00
     ],
   },
 };
+
+/** Jumlah soal berpikir-kritis per sesi latihan */
+export const MAX_BERPIKIR_KRITIS = 1;
+/** Jumlah soal pilihan-ganda per sesi latihan */
+export const MAX_PILIHAN_GANDA = 14;
+
+/**
+ * Bangun urutan soal latihan untuk satu topik:
+ * 1 soal berpikir-kritis di urutan pertama, diikuti maksimum 14 soal pilihan-ganda.
+ *
+ * Urutan ini harus konsisten antara siswa (saat mengerjakan & melihat hasil) dan
+ * admin (saat melihat rekap), karena jawaban + foto essay disimpan ber-key pada
+ * indeks daftar ini.
+ */
+export function buildSoalList(topicId: string): SoalItem[] {
+  const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'] ?? [];
+  return [
+    ...allSoal.filter((s) => s.tipe === 'berpikir-kritis').slice(0, MAX_BERPIKIR_KRITIS),
+    ...allSoal.filter((s) => s.tipe !== 'berpikir-kritis').slice(0, MAX_PILIHAN_GANDA),
+  ];
+}

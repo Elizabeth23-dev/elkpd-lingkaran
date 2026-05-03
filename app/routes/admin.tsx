@@ -9,7 +9,7 @@ import { useAuth } from '~/hooks/use-auth';
 import { getDaftarAkunAsync } from '~/data/auth';
 import { invalidateCloudCache } from '~/data/cloud-storage';
 import type { User } from '~/data/auth';
-import { daftarMateri, soalPerTopik } from '~/data/materi';
+import { daftarMateri, buildSoalList } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
 import {
   fetchAllHasil,
@@ -371,7 +371,7 @@ export default function AdminPage() {
                         const hasil = getHasil(siswa.id, materi.id);
                         const topicKey = `${siswa.id}-${materi.id}`;
                         const isTopicOpen = expandedTopic === topicKey;
-                        const soalList = soalPerTopik[materi.id]?.slice(0, 15) ?? [];
+                        const soalList = buildSoalList(materi.id);
 
                         return (
                           <div key={materi.id} className={styles.jawabanTopic}>

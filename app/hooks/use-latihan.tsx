@@ -1,14 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
-import { soalPerTopik } from "~/data/materi";
+import { buildSoalList } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 import { uploadImageToImgBB, isImgBBConfigured } from "~/data/image-upload";
 import { pushHasil } from "~/data/result-storage";
-
-/** Jumlah soal berpikir-kritis per sesi */
-const MAX_BERPIKIR_KRITIS = 1;
-/** Jumlah soal pilihan-ganda per sesi */
-const MAX_PILIHAN_GANDA = 14;
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
@@ -62,12 +57,9 @@ export function useLatihan(topicId: string) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const allSoal = soalPerTopik[topicId] ?? soalPerTopik['definisi-unsur'];
-  // 1 soal berpikir-kritis di urutan pertama, diikuti 14 soal pilihan-ganda
-  const soalList = [
-    ...allSoal.filter((s) => s.tipe === 'berpikir-kritis').slice(0, MAX_BERPIKIR_KRITIS),
-    ...allSoal.filter((s) => s.tipe !== 'berpikir-kritis').slice(0, MAX_PILIHAN_GANDA),
-  ];
+  // Urutan: 1 soal berpikir-kritis dulu, baru pilihan-ganda. Helper dibagi
+  // dengan admin & halaman hasil siswa agar indeks jawaban konsisten.
+  const soalList = buildSoalList(topicId);
 
   // Inisialisasi state dari progress yang tersimpan (jika ada)
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -272,6 +264,7 @@ export function useLatihan(topicId: string) {
     }
 
     // Push hasil (tanpa base64) ke JSONBin agar admin bisa lihat dari device manapun
+    let cloudFailed = false;
     if (user) {
       try {
         await pushHasil({
@@ -291,11 +284,25 @@ export function useLatihan(topicId: string) {
         });
       } catch (err) {
         console.warn('[use-latihan] Cloud push gagal (data tetap tersimpan lokal):', err);
-        setSubmitError('Hasil tersimpan lokal. Sinkron ke admin akan dicoba ulang nanti.');
+        cloudFailed = true;
+        setSubmitError(
+          'Sinkron ke admin gagal — periksa koneksi internet. Hasil sudah tersimpan di perangkatmu, ' +
+          'tapi mungkin belum terlihat oleh guru. Mohon laporkan ke guru.'
+        );
       }
     }
 
     setIsSubmittingFinal(false);
+
+    // Kalau cloud gagal, tahan navigasi sebentar (lewat alert blocking) supaya
+    // siswa benar-benar membaca peringatannya. Kalau sukses, langsung pindah.
+    if (cloudFailed && typeof window !== 'undefined') {
+      window.alert(
+        'Hasil sudah disimpan di perangkat ini, tapi sinkronisasi ke server gagal.\n\n' +
+        'Guru mungkin belum bisa melihat hasil pengerjaanmu sampai koneksi pulih. ' +
+        'Mohon laporkan kepada guru.'
+      );
+    }
     navigate(`/hasil/${topicId}`);
   }, [topicId, answers, submitted, essayImages, soalList, navigate, user, isSubmittingFinal]);
 
