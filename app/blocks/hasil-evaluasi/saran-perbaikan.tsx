@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { BookOpen, TrendingUp, RotateCcw, Star } from "lucide-react";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 import classnames from "classnames";
 import { buildSoalList, daftarMateri } from "~/data/materi";
 import type { HasilData } from "~/hooks/use-hasil";
+import { useTokenGate } from "~/hooks/use-token-gate";
+import { TokenGateModal } from "~/components/token-gate-modal/token-gate-modal";
 import styles from "./saran-perbaikan.module.css";
 
 export interface SaranPerbaikanProps {
@@ -11,6 +14,17 @@ export interface SaranPerbaikanProps {
 }
 
 export function SaranPerbaikan({ className, hasil }: SaranPerbaikanProps) {
+  const navigate = useNavigate();
+  const { isOpen, confirmedPath, requestNavigation, submitToken, dismiss, clearConfirmedPath } = useTokenGate();
+
+  // Navigasi ke path yang sudah dikonfirmasi (bebas akses atau token valid)
+  useEffect(() => {
+    if (confirmedPath) {
+      clearConfirmedPath();
+      navigate(confirmedPath);
+    }
+  }, [confirmedPath, clearConfirmedPath, navigate]);
+
   const soalList = buildSoalList(hasil.topicId);
   const percentage = Math.round((hasil.score / hasil.total) * 100);
 
@@ -82,12 +96,22 @@ export function SaranPerbaikan({ className, hasil }: SaranPerbaikanProps) {
               <h3 className={styles.nextTitle}>{nextMateri.title}</h3>
               <p className={styles.nextDesc}>{nextMateri.description.substring(0, 100)}...</p>
             </div>
-            <Link to={`/materi/${nextMateri.id}`} className={styles.nextBtn}>
+            <button
+              type="button"
+              className={styles.nextBtn}
+              onClick={() => requestNavigation(`/materi/${nextMateri.id}`)}
+            >
               Pelajari Sekarang
-            </Link>
+            </button>
           </div>
         )}
       </div>
+
+      <TokenGateModal
+        isOpen={isOpen}
+        onSubmit={submitToken}
+        onDismiss={dismiss}
+      />
     </div>
   );
 }
