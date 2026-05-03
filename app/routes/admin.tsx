@@ -81,27 +81,21 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    // Hanya fetch sekali saat mount — auto-poll 15 detik dihilangkan supaya
+    // hemat kuota JSONBin (free tier 10rb req/bulan). Guru klik tombol Refresh
+    // di header tabel kalau ingin data terbaru.
     invalidateCloudCache();
     invalidateHasilCache();
     void refreshAll(true);
 
-    const interval = setInterval(() => {
-      invalidateCloudCache();
-      invalidateHasilCache();
-      void refreshAll(true);
-    }, 15_000);
-
+    // Storage event tetap dipantau untuk sinkron antar-tab di browser yang sama
+    // (mis. guru buka /admin di 2 tab) — pakai cache 15 detik, tidak bypass,
+    // jadi tidak menambah request kalau tab kedua juga baru saja fetch.
     const onStorage = () => {
-      invalidateCloudCache();
-      invalidateHasilCache();
-      void refreshAll(true);
+      void refreshAll(false);
     };
     window.addEventListener('storage', onStorage);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', onStorage);
-    };
+    return () => window.removeEventListener('storage', onStorage);
   }, [refreshAll]);
 
   const handleResetNilai = useCallback(async (siswaId: string) => {
