@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { soalPerTopik } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
+import { uploadImageToImgBB, isImgBBConfigured } from "~/data/image-upload";
+import { pushHasil } from "~/data/result-storage";
 
 /** Jumlah soal berpikir-kritis per sesi */
 const MAX_BERPIKIR_KRITIS = 1;
@@ -90,6 +92,8 @@ export function useLatihan(topicId: string) {
     return soalList[savedIndex]?.waktu ?? 90;
   });
   const [isFinished, setIsFinished] = useState(false);
+  const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(
     user ? (loadProgress(user.id, topicId)?.startTime ?? Date.now()) : Date.now()
   );
@@ -212,7 +216,10 @@ export function useLatihan(topicId: string) {
   /** Dibungkus dalam ref agar bisa dipanggil dari dalam effect timer tanpa stale closure */
   const handleSelesaiRef = useRef<() => void>(() => {});
 
-  const handleSelesai = useCallback(() => {
+  const handleSelesai = useCallback(async () => {
+    if (isSubmittingFinal) return;
+    setIsSubmittingFinal(true);
+    setSubmitError(null);
     setIsFinished(true);
     if (user) clearProgress(user.id, topicId);
 
@@ -235,6 +242,7 @@ export function useLatihan(topicId: string) {
       { score: 0, totalSkor: 0, skorDiperoleh: 0 }
     );
 
+    // Simpan dulu ke sessionStorage agar halaman /hasil bisa langsung baca
     const resultData = {
       topicId,
       answers,
@@ -247,8 +255,49 @@ export function useLatihan(topicId: string) {
       timeTaken,
     };
     if (user) sessionStorage.setItem(hasilKey(user.id, topicId), JSON.stringify(resultData));
+
+    // Upload gambar essay ke ImgBB (paralel) — hanya jika dikonfigurasi
+    const essayImageUrls: Record<number, string> = {};
+    if (user && isImgBBConfigured()) {
+      const uploadEntries = Object.entries(essayImages);
+      const uploadResults = await Promise.all(
+        uploadEntries.map(async ([idx, base64]) => {
+          const r = await uploadImageToImgBB(base64);
+          return [Number(idx), r?.url ?? null] as const;
+        })
+      );
+      for (const [idx, url] of uploadResults) {
+        if (url) essayImageUrls[idx] = url;
+      }
+    }
+
+    // Push hasil (tanpa base64) ke JSONBin agar admin bisa lihat dari device manapun
+    if (user) {
+      try {
+        await pushHasil({
+          id: `${user.id}-${topicId}`,
+          siswaId: user.id,
+          siswaName: user.name,
+          topicId,
+          score,
+          total: soalList.length,
+          totalSkor,
+          skorDiperoleh,
+          timeTaken,
+          answers,
+          submitted,
+          essayImageUrls,
+          submittedAt: Date.now(),
+        });
+      } catch (err) {
+        console.warn('[use-latihan] Cloud push gagal (data tetap tersimpan lokal):', err);
+        setSubmitError('Hasil tersimpan lokal. Sinkron ke admin akan dicoba ulang nanti.');
+      }
+    }
+
+    setIsSubmittingFinal(false);
     navigate(`/hasil/${topicId}`);
-  }, [topicId, answers, submitted, essayImages, soalList, navigate, user]);
+  }, [topicId, answers, submitted, essayImages, soalList, navigate, user, isSubmittingFinal]);
 
   // Sinkronisasi ref setiap handleSelesai berubah
   handleSelesaiRef.current = handleSelesai;
@@ -261,6 +310,8 @@ export function useLatihan(topicId: string) {
     isSubmitted,
     soalTimeLeft,
     currentEssayImage,
+    isSubmittingFinal,
+    submitError,
     handleSelectAnswer,
     handleEssayImageUpload,
     handleSubmit,

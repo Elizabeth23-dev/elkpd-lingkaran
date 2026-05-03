@@ -17,6 +17,8 @@ export default function SoalLatihan() {
     isSubmitted,
     soalTimeLeft,
     currentEssayImage,
+    isSubmittingFinal,
+    submitError,
     handleSelectAnswer,
     handleEssayImageUpload,
     handleSubmit,
@@ -61,6 +63,12 @@ export default function SoalLatihan() {
         </>
       )}
 
+      {submitError && (
+        <div className={styles.submitError} role="alert">
+          {submitError}
+        </div>
+      )}
+
       <NavigasiLatihan
         topicId={topicId}
         currentIndex={currentIndex}
@@ -69,6 +77,7 @@ export default function SoalLatihan() {
         isSubmitted={isSubmitted}
         isEssay={isEssay}
         essayImageUploaded={!!currentEssayImage}
+        isSubmittingFinal={isSubmittingFinal}
         onPrev={handlePrev}
         onNext={handleNext}
         onSubmit={handleSubmit}
