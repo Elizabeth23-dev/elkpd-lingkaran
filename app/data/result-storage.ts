@@ -261,9 +261,12 @@ export async function reconcileLocalHasil(siswaId: string): Promise<void> {
     try {
       if (sessionStorage.getItem(hKey) !== null) {
         // Siswa pernah selesai latihan ini, tapi cloud sudah tidak punya →
-        // admin baru saja reset → hapus hasil + progress lokal.
+        // admin baru saja reset → hapus hasil + progress lokal (di sessionStorage
+        // & localStorage, karena progress disimpan di localStorage sejak versi
+        // resume-after-refresh).
         sessionStorage.removeItem(hKey);
         sessionStorage.removeItem(pKey);
+        try { localStorage.removeItem(pKey); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
   }
