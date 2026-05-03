@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import type { User, UserRole, RegisterPayload, RegisterResult } from '~/data/auth';
 import { authenticate, registerSiswa, getDaftarAkunAsync } from '~/data/auth';
 import { invalidateCloudCache } from '~/data/cloud-storage';
+import { reconcileLocalHasil } from '~/data/result-storage';
 
 const AUTH_KEY = 'elkpd-auth';
 
@@ -45,6 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ) ?? null
       : await authenticate(username, password, role);
     if (found) {
+      // Untuk siswa: sinkron sessionStorage hasil dengan cloud sebelum lanjut,
+      // supaya kalau guru sudah reset nilai dari admin, tampilan siswa juga
+      // ikut tereset begitu login (siswa bisa kerjakan latihan ulang).
+      if (found.role === 'siswa') {
+        try {
+          await reconcileLocalHasil(found.id);
+        } catch { /* ignore — login tetap lanjut */ }
+      }
       setUser(found);
       saveSession(found);
       return true;

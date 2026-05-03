@@ -13,6 +13,7 @@
  */
 
 import { getActiveApiKey, getActiveBinId, type CloudUser } from './cloud-storage';
+import { daftarMateri } from './materi';
 
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
 
@@ -220,4 +221,59 @@ export async function deleteHasil(siswaId: string, topicId: string): Promise<voi
     }
   }
   throw lastErr ?? new Error(`Delete hasil gagal setelah ${MAX_PUSH_RETRY} retry`);
+}
+
+/**
+ * Sinkron sessionStorage + localStorage hasil siswa dengan cloud (sumber kebenaran).
+ * Dipakai supaya ketika guru klik "Reset Nilai" di admin (yang menghapus entry
+ * dari cloud), tampilan di device siswa juga ikut tereset begitu siswa
+ * navigate/refresh — tanpa harus tutup tab manual.
+ *
+ * Aturan: hanya hapus key `hasil-{siswaId}-{topicId}` (dan progress) yang ada di
+ * sessionStorage TAPI tidak ada di cloud. Tidak menyentuh sessionStorage saat
+ * cloud tidak terkonfigurasi atau saat fetch gagal — supaya tidak salah
+ * menghapus data lokal hanya karena offline.
+ */
+export async function reconcileLocalHasil(siswaId: string): Promise<void> {
+  if (!isConfigured()) return;
+  if (typeof window === 'undefined') return;
+
+  // Catatan: panggil fetchBin() langsung supaya error network bisa propagate.
+  // fetchAllHasil() internal-fallback ke localStorage saat cloud gagal — kalau
+  // dipakai di sini, kita bisa salah anggap "cloud kosong" padahal sebenarnya
+  // offline, lalu menghapus sessionStorage hasil siswa secara keliru.
+  let cloudHasil: CloudHasil[];
+  try {
+    const bin = await fetchBin();
+    cloudHasil = Array.isArray(bin.hasil) ? bin.hasil : [];
+  } catch {
+    return; // gagal fetch → biarkan local apa adanya
+  }
+
+  const cloudTopicsForSiswa = new Set(
+    cloudHasil.filter((h) => h.siswaId === siswaId).map((h) => h.topicId)
+  );
+
+  for (const m of daftarMateri) {
+    if (cloudTopicsForSiswa.has(m.id)) continue;
+    const hKey = `hasil-${siswaId}-${m.id}`;
+    const pKey = `progress-${siswaId}-${m.id}`;
+    try {
+      if (sessionStorage.getItem(hKey) !== null) {
+        // Siswa pernah selesai latihan ini, tapi cloud sudah tidak punya →
+        // admin baru saja reset → hapus hasil + progress lokal.
+        sessionStorage.removeItem(hKey);
+        sessionStorage.removeItem(pKey);
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Bersihkan localStorage fallback juga supaya konsisten.
+  try {
+    const local = readLocalHasil();
+    const filtered = local.filter(
+      (h) => h.siswaId !== siswaId || cloudTopicsForSiswa.has(h.topicId)
+    );
+    if (filtered.length !== local.length) writeLocalHasil(filtered);
+  } catch { /* ignore */ }
 }
