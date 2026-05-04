@@ -1,16 +1,21 @@
 import { useState, useCallback } from 'react';
-import { daftarMateri, soalPerTopik } from '~/data/materi';
+import { daftarMateri, buildSoalList } from '~/data/materi';
 import { hasilKey } from '~/hooks/use-latihan';
 
-/** Total jumlah soal di seluruh materi (sumber kebenaran: data soal). */
+// Soal yang benar-benar dikerjakan siswa per sesi adalah subset dari pool
+// `soalPerTopik` — dipilih oleh `buildSoalList` (1 berpikir-kritis + 14
+// pilihan-ganda = 15 soal). Total sumber kebenarannya pakai itu, bukan pool.
+const soalPerMateri = new Map(daftarMateri.map((m) => [m.id, buildSoalList(m.id)]));
+
+/** Total jumlah soal yang dikerjakan di seluruh materi (15 × jumlah materi). */
 const totalSoalMax = daftarMateri.reduce(
-  (sum, m) => sum + (soalPerTopik[m.id]?.length ?? 0),
+  (sum, m) => sum + (soalPerMateri.get(m.id)?.length ?? 0),
   0
 );
 
-/** Total skor maksimal di seluruh materi (jumlah `skor` semua soal). */
+/** Total skor maksimal di seluruh materi (jumlah `skor` soal yang dikerjakan). */
 const totalSkorMax = daftarMateri.reduce(
-  (sum, m) => sum + (soalPerTopik[m.id]?.reduce((s, q) => s + (q.skor ?? 0), 0) ?? 0),
+  (sum, m) => sum + (soalPerMateri.get(m.id)?.reduce((s, q) => s + (q.skor ?? 0), 0) ?? 0),
   0
 );
 
@@ -47,7 +52,7 @@ function computeProgress(siswaId: string) {
         skorDiperolehTotal += data.skorDiperoleh;
       } else if (data.total > 0) {
         const skorTopikMax =
-          soalPerTopik[m.id]?.reduce((s, q) => s + (q.skor ?? 0), 0) ?? 0;
+          soalPerMateri.get(m.id)?.reduce((s, q) => s + (q.skor ?? 0), 0) ?? 0;
         skorDiperolehTotal += Math.round((data.score / data.total) * skorTopikMax);
       }
 
