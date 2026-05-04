@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router';
 import {
   Users, BookOpen, BarChart2, Award, Clock, CheckCircle,
   XCircle, LogOut, ChevronRight, Layers, RotateCcw, FileText,
-  ChevronDown, ChevronUp, Image, ExternalLink
+  ChevronDown, ChevronUp, Image, ExternalLink, Trash2
 } from 'lucide-react';
 import { useAuth } from '~/hooks/use-auth';
-import { getDaftarAkunAsync } from '~/data/auth';
+import { getDaftarAkunAsync, deleteSiswaAkun } from '~/data/auth';
 import { invalidateCloudCache } from '~/data/cloud-storage';
 import type { User } from '~/data/auth';
 import { daftarMateri, buildSoalList } from '~/data/materi';
@@ -59,6 +59,7 @@ export default function AdminPage() {
   const [loadingSiswa, setLoadingSiswa] = useState(false);
   const [expandedSiswa, setExpandedSiswa] = useState<string | null>(null);
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const refreshAll = useCallback(async (bypass = false) => {
     setLoadingSiswa(true);
@@ -116,6 +117,47 @@ export default function AdminPage() {
       }
     }
     await refreshAll(true);
+  }, [refreshAll]);
+
+  const handleHapusSiswa = useCallback(async (siswa: User) => {
+    if (typeof window !== 'undefined') {
+      const ok = window.confirm(
+        `Hapus akun siswa "${siswa.name}" (${siswa.username})?\n\n` +
+        'Semua nilai latihan siswa ini juga akan ikut dihapus dari server.\n' +
+        'Tindakan ini tidak bisa dibatalkan.'
+      );
+      if (!ok) return;
+    }
+
+    setDeletingId(siswa.id);
+    try {
+      // Hapus seluruh hasil siswa dulu, supaya tidak meninggalkan row "yatim"
+      // di cloud_hasil (tabel ini tidak punya FK cascade ke cloud_users).
+      daftarMateri.forEach((m) => {
+        try { sessionStorage.removeItem(hasilKey(siswa.id, m.id)); } catch { /* ignore */ }
+      });
+      const hasilResults = await Promise.allSettled(
+        daftarMateri.map((m) => deleteHasil(siswa.id, m.id))
+      );
+      const failedHasil = hasilResults.filter((r) => r.status === 'rejected');
+      if (failedHasil.length > 0) {
+        console.warn('[admin] Hapus hasil siswa gagal pada beberapa topik:', failedHasil);
+      }
+
+      const result = await deleteSiswaAkun(siswa.id);
+      if (!result.ok) {
+        if (typeof window !== 'undefined') {
+          window.alert(result.error);
+        }
+        return;
+      }
+
+      // Tutup expanded card kalau yang dihapus sedang dibuka.
+      setExpandedSiswa((prev) => (prev === siswa.id ? null : prev));
+      await refreshAll(true);
+    } finally {
+      setDeletingId(null);
+    }
   }, [refreshAll]);
 
   const getHasil = useCallback(
@@ -328,14 +370,27 @@ export default function AdminPage() {
                         </div>
                       </td>
                       <td className={styles.tdCenter}>
-                        <button
-                          className={styles.resetBtn}
-                          onClick={() => handleResetNilai(siswa.id)}
-                          title="Reset nilai siswa ini"
-                        >
-                          <RotateCcw size={13} />
-                          Reset
-                        </button>
+                        <div className={styles.aksiCell}>
+                          <button
+                            className={styles.resetBtn}
+                            onClick={() => handleResetNilai(siswa.id)}
+                            title="Reset nilai siswa ini"
+                          >
+                            <RotateCcw size={13} />
+                            Reset
+                          </button>
+                          {siswa.id.startsWith('siswa-') && (
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => handleHapusSiswa(siswa)}
+                              disabled={deletingId === siswa.id}
+                              title="Hapus akun siswa ini (beserta seluruh nilainya)"
+                            >
+                              <Trash2 size={13} />
+                              {deletingId === siswa.id ? 'Menghapus...' : 'Hapus'}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

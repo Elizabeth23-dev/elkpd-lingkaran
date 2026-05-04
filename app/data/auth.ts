@@ -1,4 +1,4 @@
-import { fetchCloudUsers, saveCloudUsers, type CloudUser } from './cloud-storage';
+import { fetchCloudUsers, saveCloudUsers, deleteCloudUser, type CloudUser } from './cloud-storage';
 
 export type UserRole = 'guru' | 'siswa';
 
@@ -12,7 +12,13 @@ export interface User {
   nip?: string;
 }
 
-/** Akun bawaan (tidak bisa diubah) */
+/**
+ * Akun bawaan (tidak bisa diubah / dihapus dari client).
+ *
+ * Hanya akun guru yang di-bundle. Akun siswa Kelompok 1..8 sebelumnya
+ * juga di sini, tapi sudah dihapus — siswa sekarang membuat akun
+ * sendiri lewat halaman registrasi (tersimpan di tabel `cloud_users`).
+ */
 const defaultAkun: User[] = [
   {
     id: 'guru-001',
@@ -21,70 +27,6 @@ const defaultAkun: User[] = [
     password: 'Crocodile',
     role: 'guru',
     nip: '198503122010012005',
-  },
-  {
-    id: 'kelompok-001',
-    name: 'Kelompok 1',
-    username: 'Kelompok 1',
-    password: 'vmds71#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-002',
-    name: 'Kelompok 2',
-    username: 'Kelompok 2',
-    password: 'dsvk98#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-003',
-    name: 'Kelompok 3',
-    username: 'Kelompok 3',
-    password: 'zkoq56#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-004',
-    name: 'Kelompok 4',
-    username: 'Kelompok 4',
-    password: 'dsnj20#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-005',
-    name: 'Kelompok 5',
-    username: 'Kelompok 5',
-    password: 'kwml7#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-006',
-    name: 'Kelompok 6',
-    username: 'Kelompok 6',
-    password: 'cnjs81#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-007',
-    name: 'Kelompok 7',
-    username: 'Kelompok 7',
-    password: 'xcnk23#',
-    role: 'siswa',
-    kelas: 'XI 1',
-  },
-  {
-    id: 'kelompok-008',
-    name: 'Kelompok 8',
-    username: 'Kelompok 8',
-    password: 'jdsk32#',
-    role: 'siswa',
-    kelas: 'XI 1',
   },
 ];
 
@@ -179,4 +121,33 @@ export async function registerSiswa(payload: RegisterPayload): Promise<RegisterR
 
   const newUser: User = cloudUserToUser(newCloudUser);
   return { ok: true, user: newUser };
+}
+
+export type DeleteSiswaResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Hapus akun siswa hasil registrasi dari cloud. Akun bawaan (`defaultAkun`
+ * — saat ini hanya akun guru) tidak bisa dihapus karena hardcoded di
+ * bundle; fungsi ini menolak dengan error eksplisit kalau ada usaha
+ * menghapusnya.
+ */
+export async function deleteSiswaAkun(siswaId: string): Promise<DeleteSiswaResult> {
+  const isDefault = defaultAkun.some((u) => u.id === siswaId);
+  if (isDefault) {
+    return {
+      ok: false,
+      error: 'Akun bawaan tidak bisa dihapus. Hanya akun siswa hasil registrasi (Daftar Akun) yang bisa dihapus.',
+    };
+  }
+
+  try {
+    await deleteCloudUser(siswaId);
+    return { ok: true };
+  } catch (err) {
+    console.warn('[auth] deleteSiswaAkun: gagal hapus dari cloud', err);
+    return {
+      ok: false,
+      error: 'Gagal menghapus akun dari server. Periksa koneksi internet, lalu coba lagi.',
+    };
+  }
 }

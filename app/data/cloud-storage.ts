@@ -190,3 +190,34 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
     throw err;
   }
 }
+
+/**
+ * Hapus 1 akun siswa dari cloud_users by id. Dipakai oleh admin (guru)
+ * untuk menghapus akun siswa hasil registrasi.
+ *
+ * Membutuhkan policy DELETE pada `cloud_users` untuk role anon (lihat
+ * `supabase/migrations/0002_cloud_users_anon_delete.sql`). Tanpa policy
+ * itu Supabase akan menolak dengan `code 42501` (row-level security).
+ *
+ * Backup localStorage juga ikut dibersihkan supaya konsisten.
+ */
+export async function deleteCloudUser(siswaId: string): Promise<void> {
+  // Bersihkan localStorage backup dulu agar konsisten dengan cloud.
+  try {
+    const local = getLocalFallback().filter((u) => u.id !== siswaId);
+    writeLocalFallback(local);
+  } catch { /* ignore */ }
+
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured()) return;
+
+  try {
+    const { error } = await supabase.from('cloud_users').delete().eq('id', siswaId);
+    if (error) throw error;
+    console.info(`[cloud-storage] Berhasil hapus user ${siswaId} dari Supabase`);
+    invalidateCache();
+  } catch (err) {
+    console.warn('[cloud-storage] Gagal hapus user dari Supabase:', err);
+    throw err;
+  }
+}
