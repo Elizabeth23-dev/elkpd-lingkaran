@@ -150,19 +150,39 @@ export async function saveCloudUsers(users: CloudUser[]): Promise<void> {
 
   const supabase = getSupabase();
   if (!supabase || !isSupabaseConfigured()) return;
+  if (users.length === 0) return;
 
-  // Upsert berdasarkan primary key (id). Idempoten: kalau user dengan id sama
-  // sudah ada, akan di-update (data CloudUser tidak punya field yang berubah,
-  // jadi practically no-op).
-  const rows = users.map(cloudUserToRow);
-  if (rows.length === 0) return;
+  // RLS pada `cloud_users` sengaja TIDAK membuka UPDATE/DELETE untuk anon —
+  // akun siswa imutable dari client (lihat
+  // `supabase/migrations/0001_init_cloud_users_and_hasil.sql`).
+  //
+  // Karena itu jangan pakai upsert dengan full list: PostgREST akan
+  // menerjemahkannya menjadi `INSERT ... ON CONFLICT DO UPDATE`, yang
+  // mengevaluasi RLS UPDATE policy untuk row yang sudah ada dan ditolak
+  // (`code 42501: new row violates row-level security policy`).
+  //
+  // Sebaliknya, lakukan diff vs row yang sudah ada lalu INSERT hanya
+  // user baru. API tetap menerima full array agar backward-compatible.
+  const { data: existingRows, error: fetchError } = await supabase
+    .from('cloud_users')
+    .select('id');
+  if (fetchError) {
+    console.warn('[cloud-storage] Gagal ambil daftar id sebelum simpan:', fetchError);
+    throw fetchError;
+  }
+  const existingIds = new Set((existingRows ?? []).map((r) => (r as { id: string }).id));
+  const newRows = users.filter((u) => !existingIds.has(u.id)).map(cloudUserToRow);
+
+  if (newRows.length === 0) {
+    invalidateCache();
+    setCache(users);
+    return;
+  }
 
   try {
-    const { error } = await supabase
-      .from('cloud_users')
-      .upsert(rows, { onConflict: 'id' });
+    const { error } = await supabase.from('cloud_users').insert(newRows);
     if (error) throw error;
-    console.info(`[cloud-storage] Berhasil simpan ${rows.length} users ke Supabase`);
+    console.info(`[cloud-storage] Berhasil INSERT ${newRows.length} user baru ke Supabase`);
     invalidateCache();
     setCache(users);
   } catch (err) {
