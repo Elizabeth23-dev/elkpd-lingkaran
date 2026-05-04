@@ -91,6 +91,7 @@ export function useLatihan(topicId: string) {
   });
   const [isFinished, setIsFinished] = useState(false);
   const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState<'idle' | 'uploading' | 'saving'>('idle');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(
     user ? (loadProgress(user.id, topicId)?.startTime ?? Date.now()) : Date.now()
@@ -230,6 +231,7 @@ export function useLatihan(topicId: string) {
   const handleSelesai = useCallback(async () => {
     if (isSubmittingFinal) return;
     setIsSubmittingFinal(true);
+    setSubmitPhase('saving');
     setSubmitError(null);
     setIsFinished(true);
     if (user) clearProgress(user.id, topicId);
@@ -271,6 +273,7 @@ export function useLatihan(topicId: string) {
     const essayImageUrls: Record<number, string> = {};
     if (user && isImgBBConfigured()) {
       const uploadEntries = Object.entries(essayImages);
+      if (uploadEntries.length > 0) setSubmitPhase('uploading');
       const uploadResults = await Promise.all(
         uploadEntries.map(async ([idx, base64]) => {
           const r = await uploadImageToImgBB(base64);
@@ -283,6 +286,7 @@ export function useLatihan(topicId: string) {
     }
 
     // Push hasil (tanpa base64) ke JSONBin agar admin bisa lihat dari device manapun
+    setSubmitPhase('saving');
     let cloudFailed = false;
     if (user) {
       try {
@@ -312,6 +316,7 @@ export function useLatihan(topicId: string) {
     }
 
     setIsSubmittingFinal(false);
+    setSubmitPhase('idle');
 
     // Kalau cloud gagal, tahan navigasi sebentar (lewat alert blocking) supaya
     // siswa benar-benar membaca peringatannya. Kalau sukses, langsung pindah.
@@ -337,6 +342,7 @@ export function useLatihan(topicId: string) {
     soalTimeLeft,
     currentEssayImage,
     isSubmittingFinal,
+    submitPhase,
     submitError,
     handleSelectAnswer,
     handleEssayImageUpload,

@@ -1,7 +1,8 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import classnames from "classnames";
-import { Upload, ImageIcon, CheckCircle2, Lightbulb } from "lucide-react";
+import { Upload, ImageIcon, CheckCircle2, Lightbulb, Loader2 } from "lucide-react";
 import type { SoalItem } from "~/data/materi";
+import { compressImageFile } from "~/data/image-compress";
 import styles from "./kontainer-essay.module.css";
 
 export interface KontainerEssayProps {
@@ -28,17 +29,22 @@ export function KontainerEssay({
   isSubmitted,
 }: KontainerEssayProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const kesulitan = kesulitanConfig[soal.kesulitan];
 
   const handleFile = useCallback(
-    (file: File) => {
+    async (file: File) => {
       if (!file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target?.result as string;
-        if (base64) onImageUpload(base64);
-      };
-      reader.readAsDataURL(file);
+      setIsProcessing(true);
+      try {
+        // Kompres dulu sebelum simpan ke state — foto kamera HP biasanya
+        // 4–12 MB; setelah resize ke 1600px JPEG 0.82 turun jadi ratusan KB.
+        // Membuat upload ke ImgBB jauh lebih cepat di koneksi mobile.
+        const base64 = await compressImageFile(file);
+        onImageUpload(base64);
+      } finally {
+        setIsProcessing(false);
+      }
     },
     [onImageUpload]
   );
@@ -46,7 +52,7 @@ export function KontainerEssay({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) handleFile(file);
+      if (file) void handleFile(file);
     },
     [handleFile]
   );
@@ -55,7 +61,7 @@ export function KontainerEssay({
     (e: React.DragEvent) => {
       e.preventDefault();
       const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file);
+      if (file) void handleFile(file);
     },
     [handleFile]
   );
@@ -112,14 +118,27 @@ export function KontainerEssay({
               </div>
             ) : (
               <div
-                className={classnames(styles.dropzone, isSubmitted && styles.dropzoneDisabled)}
-                onClick={() => !isSubmitted && fileInputRef.current?.click()}
-                onDrop={!isSubmitted ? handleDrop : undefined}
-                onDragOver={!isSubmitted ? handleDragOver : undefined}
+                className={classnames(
+                  styles.dropzone,
+                  (isSubmitted || isProcessing) && styles.dropzoneDisabled
+                )}
+                onClick={() => !isSubmitted && !isProcessing && fileInputRef.current?.click()}
+                onDrop={!isSubmitted && !isProcessing ? handleDrop : undefined}
+                onDragOver={!isSubmitted && !isProcessing ? handleDragOver : undefined}
               >
-                <Upload size={32} className={styles.uploadIcon} />
-                <p className={styles.dropzoneText}>Klik atau seret foto jawaban ke sini</p>
-                <p className={styles.dropzoneHint}>Format: JPG, PNG, HEIC (maks. 10 MB)</p>
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={32} className={styles.uploadIconSpin} />
+                    <p className={styles.dropzoneText}>Mengompres gambar…</p>
+                    <p className={styles.dropzoneHint}>Mohon tunggu sebentar</p>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={32} className={styles.uploadIcon} />
+                    <p className={styles.dropzoneText}>Klik atau seret foto jawaban ke sini</p>
+                    <p className={styles.dropzoneHint}>Format: JPG, PNG (maks. 10 MB)</p>
+                  </>
+                )}
               </div>
             )}
 

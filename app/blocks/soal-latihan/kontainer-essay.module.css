@@ -146,6 +146,16 @@
   color: var(--color-primary-light);
 }
 
+.uploadIconSpin {
+  color: var(--color-primary-light);
+  animation: kontainerEssaySpin 1s linear infinite;
+}
+
+@keyframes kontainerEssaySpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .dropzoneText {
   font-size: var(--text-base);
   font-weight: 600;

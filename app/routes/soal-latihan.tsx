@@ -18,6 +18,7 @@ export default function SoalLatihan() {
     soalTimeLeft,
     currentEssayImage,
     isSubmittingFinal,
+    submitPhase,
     submitError,
     handleSelectAnswer,
     handleEssayImageUpload,
@@ -78,6 +79,7 @@ export default function SoalLatihan() {
         isEssay={isEssay}
         essayImageUploaded={!!currentEssayImage}
         isSubmittingFinal={isSubmittingFinal}
+        submitPhase={submitPhase}
         onPrev={handlePrev}
         onNext={handleNext}
         onSubmit={handleSubmit}

@@ -49,9 +49,16 @@ interface ImgBBResponse {
   };
 }
 
+/** Timeout default untuk request upload (ms). Cukup longgar untuk koneksi mobile lambat. */
+const UPLOAD_TIMEOUT_MS = 30_000;
+
 /**
  * Upload base64 image (data URI atau plain base64) ke ImgBB.
  * Return URL gambar publik atau null jika gagal/belum dikonfigurasi.
+ *
+ * Punya timeout {@link UPLOAD_TIMEOUT_MS} (30 detik) supaya saat sinyal
+ * lemah, request tidak menggantung tanpa batas — siswa setidaknya
+ * mendapat error eksplisit alih-alih tombol "Menyimpan…" yang stuck.
  */
 export async function uploadImageToImgBB(base64: string): Promise<ImgBBUploadResult | null> {
   const key = getActiveImgBBKey();
@@ -67,8 +74,15 @@ export async function uploadImageToImgBB(base64: string): Promise<ImgBBUploadRes
   formData.append('key', key);
   formData.append('image', cleanBase64);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
   try {
-    const res = await fetch(IMGBB_BASE, { method: 'POST', body: formData });
+    const res = await fetch(IMGBB_BASE, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = (await res.json()) as ImgBBResponse;
     if (!data.success || !data.data?.url) {
@@ -80,7 +94,13 @@ export async function uploadImageToImgBB(base64: string): Promise<ImgBBUploadRes
       thumbUrl: data.data.thumb?.url ?? data.data.url,
     };
   } catch (err) {
-    console.warn('[image-upload] Gagal upload:', err);
+    if ((err as { name?: string }).name === 'AbortError') {
+      console.warn(`[image-upload] Upload timeout setelah ${UPLOAD_TIMEOUT_MS}ms`);
+    } else {
+      console.warn('[image-upload] Gagal upload:', err);
+    }
     return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
