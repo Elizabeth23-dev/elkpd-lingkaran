@@ -17,7 +17,8 @@ export function BagianProgress({ className }: BagianProgressProps) {
     totalMateri,
     soalDikerjakan,
     totalSoal,
-    skorRataRata,
+    skorDiperoleh,
+    totalSkor,
     progressKeseluruhan,
     reset,
   } = useProgress(siswaId);
@@ -25,7 +26,7 @@ export function BagianProgress({ className }: BagianProgressProps) {
   const stats = [
     { icon: BookOpen, label: 'Materi Dipelajari', value: String(materiDipelajari), total: String(totalMateri), color: 'primary' },
     { icon: CheckCircle2, label: 'Soal Dikerjakan', value: String(soalDikerjakan), total: String(totalSoal), color: 'success' },
-    { icon: Award, label: 'Skor Rata-rata', value: String(skorRataRata), total: '100', color: 'accent' },
+    { icon: Award, label: 'Total Skor', value: String(skorDiperoleh), total: String(totalSkor), color: 'accent' },
     { icon: TrendingUp, label: 'Progress Keseluruhan', value: String(progressKeseluruhan), total: '100', color: 'secondary' },
   ];
 
