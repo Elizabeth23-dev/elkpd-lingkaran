@@ -1,4 +1,4 @@
-import { fetchCloudUsers, saveCloudUsers, type CloudUser } from './cloud-storage';
+import { fetchCloudUsers, saveCloudUsers, deleteCloudUser, type CloudUser } from './cloud-storage';
 
 export type UserRole = 'guru' | 'siswa';
 
@@ -179,4 +179,32 @@ export async function registerSiswa(payload: RegisterPayload): Promise<RegisterR
 
   const newUser: User = cloudUserToUser(newCloudUser);
   return { ok: true, user: newUser };
+}
+
+export type DeleteSiswaResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Hapus akun siswa hasil registrasi dari cloud. Akun bawaan (`defaultAkun`,
+ * mis. Kelompok 1..8 dan akun guru) tidak bisa dihapus karena hardcoded di
+ * bundle — menolak dengan error eksplisit kalau ada usaha menghapusnya.
+ */
+export async function deleteSiswaAkun(siswaId: string): Promise<DeleteSiswaResult> {
+  const isDefault = defaultAkun.some((u) => u.id === siswaId);
+  if (isDefault) {
+    return {
+      ok: false,
+      error: 'Akun bawaan tidak bisa dihapus. Hanya akun siswa hasil registrasi (Daftar Akun) yang bisa dihapus.',
+    };
+  }
+
+  try {
+    await deleteCloudUser(siswaId);
+    return { ok: true };
+  } catch (err) {
+    console.warn('[auth] deleteSiswaAkun: gagal hapus dari cloud', err);
+    return {
+      ok: false,
+      error: 'Gagal menghapus akun dari server. Periksa koneksi internet, lalu coba lagi.',
+    };
+  }
 }
