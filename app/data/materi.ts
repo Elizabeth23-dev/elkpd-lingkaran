@@ -54,10 +54,10 @@ export const daftarMateri: Materi[] = [
     id: 'lingkaran-garis-singgung',
     title: 'Lingkaran dan Garis Singgung',
     subtitle: 'Garis Singgung',
-    description: 'Pelajari pengertian garis singgung lingkaran, sifat-sifatnya, dan cara menghitung panjang garis singgung dari titik di luar lingkaran menggunakan teorema Pythagoras.',
+    description: 'Pelajari pengertian garis singgung lingkaran dan sifat-sifatnya.',
     estimasiWaktu: '45 menit',
     icon: 'git-branch',
-    topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung', 'Panjang Garis Singgung dari Titik Luar'],
+    topik: ['Pengertian Garis Singgung', 'Sifat Garis Singgung'],
   },
 ];
 
@@ -884,23 +884,8 @@ Berbeda dengan garis potong (sekans) yang memiliki dua titik persekutuan, garis 
 \u2022 Dua garis singgung dari titik luar memiliki panjang yang sama: Jika dari titik P di luar lingkaran dibuat dua garis singgung PA dan PB, maka PA = PB.
 \u2022 Garis singgung tidak memiliki dua titik yang terletak di dalam lingkaran.`,
       },
-      {
-        judul: 'Panjang Garis Singgung dari Titik Luar',
-        isi: `Untuk menghitung panjang garis singgung dari titik di luar lingkaran, kita menggunakan teorema Pythagoras.
-
-Jika P adalah titik di luar lingkaran berpusat O berjari-jari r, dan PT adalah garis singgung dari P ke titik singgung T, maka:
-
-\u2022 Segitiga OTP siku-siku di T (karena PT \u22a5 OT)
-\u2022 Berlaku: OP\u00b2 = OT\u00b2 + PT\u00b2
-\u2022 Sehingga: PT\u00b2 = OP\u00b2 \u2212 r\u00b2, atau PT = \u221a(OP\u00b2 \u2212 r\u00b2)
-
-Jika dari P ditarik dua garis singgung PA dan PB, maka PA = PB (terbukti dari kongruensi segitiga OAP \u2261 segitiga OBP dengan kriteria siku-siku-miring-sisi / RHS).`,
-      },
     ],
-    rumus: [
-      { label: 'Panjang Garis Singgung dari Titik Luar', formula: 'PT = \\sqrt{OP^2 - r^2}', latex: true },
-      { label: 'Hubungan Pythagoras pada Segitiga OTP', formula: 'OP^2 = OT^2 + PT^2', latex: true },
-    ],
+    rumus: [],
     contoh: [
       {
         soal: 'Roda sebuah sepeda berjari-jari 28 cm sedang berjalan di atas jalan yang rata. Di titik T roda menyentuh jalan.\n\na. Berapa banyak titik persentuhan antara roda dan jalan? Jelaskan mengapa!\n\nb. Bagaimana hubungan antara jari-jari OT dan permukaan jalan di titik T?\n\nc. Apakah jalan termasuk garis singgung atau garis potong terhadap roda? Berikan alasanmu!\n\nd. Apa perbedaan antara garis singgung dan garis potong (sekans)?\n\ne. Seorang teman berpendapat roda menyentuh jalan di dua titik agar lebih stabil. Apakah benar? Jelaskan alasanmu!',
