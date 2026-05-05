@@ -13,6 +13,7 @@ export interface NavigasiLatihanProps {
   isEssay?: boolean;
   essayImageUploaded?: boolean;
   isSubmittingFinal?: boolean;
+  submitPhase?: 'idle' | 'uploading' | 'saving';
   onPrev: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -29,11 +30,16 @@ export function NavigasiLatihan({
   isEssay = false,
   essayImageUploaded = false,
   isSubmittingFinal = false,
+  submitPhase = 'idle',
   onPrev,
   onNext,
   onSubmit,
   onSelesai,
 }: NavigasiLatihanProps) {
+  const submitLabel =
+    submitPhase === 'uploading'
+      ? 'Mengunggah gambar…'
+      : 'Menyimpan ke server…';
   const isLast = currentIndex === totalSoal - 1;
   const canSubmit = isEssay ? essayImageUploaded : selectedAnswer !== null;
 
@@ -69,7 +75,7 @@ export function NavigasiLatihan({
                 {isSubmittingFinal ? (
                   <>
                     <Loader2 size={16} className={styles.spin} />
-                    <span>Menyimpan ke server…</span>
+                    <span>{submitLabel}</span>
                   </>
                 ) : (
                   <>
