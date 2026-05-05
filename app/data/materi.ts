@@ -45,10 +45,10 @@ export const daftarMateri: Materi[] = [
     id: 'lingkaran-busur',
     title: 'Lingkaran dan Busur Lingkaran',
     subtitle: 'Sudut Pusat & Sudut Keliling',
-    description: 'Pelajari hubungan antara lingkaran dan busur lingkaran, sudut pusat, sudut keliling, serta panjang busur dan luas juring berdasarkan sudut yang menghadapinya.',
-    estimasiWaktu: '45 menit',
+    description: 'Pelajari hubungan antara lingkaran dan busur lingkaran, sudut pusat, sudut keliling, panjang busur dan luas juring, serta panjang tali busur.',
+    estimasiWaktu: '50 menit',
     icon: 'git-commit-horizontal',
-    topik: ['Busur Minor dan Busur Mayor', 'Sudut Pusat dan Sudut Keliling', 'Hubungan Sudut Pusat dan Sudut Keliling', 'Panjang Busur dan Luas Juring'],
+    topik: ['Busur Minor dan Busur Mayor', 'Sudut Pusat dan Sudut Keliling', 'Hubungan Sudut Pusat dan Sudut Keliling', 'Panjang Busur dan Luas Juring', 'Panjang Tali Busur'],
   },
   {
     id: 'lingkaran-garis-singgung',
@@ -194,6 +194,28 @@ export const soalPerTopik: Record<string, SoalItem[]> = {
       kesulitan: 'sulit',
       skor: 15,
       waktu: 120,
+    },
+    {
+      id: 23,
+      tipe: 'pilihan-ganda',
+      pertanyaan: 'Lingkaran berpusat O memiliki jari-jari 10 cm. Tali busur AB dengan sudut pusat \u2220AOB = 60\u00b0. Panjang tali busur AB adalah...',
+      pilihan: ['5 cm', '10 cm', '10\u221a3 cm', '20 cm'],
+      jawabanBenar: 1,
+      penjelasan: 'Gunakan rumus panjang tali busur dari sudut pusat: AB = 2r sin(\u03b1/2) = 2 \u00d7 10 \u00d7 sin(30\u00b0) = 20 \u00d7 0,5 = 10 cm. Catatan: karena \u2220AOB = 60\u00b0 dan OA = OB = r, segitiga OAB sama sisi sehingga AB = OA = OB = 10 cm.',
+      kesulitan: 'sedang',
+      skor: 10,
+      waktu: 90,
+    },
+    {
+      id: 24,
+      tipe: 'pilihan-ganda',
+      pertanyaan: 'Tali busur AB pada lingkaran berjari-jari 13 cm berjarak 5 cm dari pusat lingkaran (apotema = 5 cm). Panjang tali busur AB adalah...',
+      pilihan: ['12 cm', '18 cm', '24 cm', '26 cm'],
+      jawabanBenar: 2,
+      penjelasan: 'Gunakan hubungan antara jari-jari, apotema, dan setengah tali busur (Pythagoras): r\u00b2 = a\u00b2 + (AB/2)\u00b2. Maka AB = 2\u221a(r\u00b2 \u2212 a\u00b2) = 2\u221a(13\u00b2 \u2212 5\u00b2) = 2\u221a(169 \u2212 25) = 2\u221a144 = 2 \u00d7 12 = 24 cm.',
+      kesulitan: 'sedang',
+      skor: 10,
+      waktu: 90,
     },
     {
       id: 13,
@@ -778,12 +800,37 @@ L = (α/360°) × πr²
 
 di mana \u03b1 adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari lingkaran.`
       },
+      {
+        judul: 'Panjang Tali Busur',
+        isi: `Tali busur adalah ruas garis lurus yang menghubungkan dua titik pada lingkaran. Diameter merupakan tali busur terpanjang (yang melalui pusat).
+
+Untuk menghitung panjang tali busur, ada dua pendekatan yang sering digunakan, tergantung data yang tersedia.
+
+(1) Jika diketahui jari-jari r dan sudut pusat \u03b1 yang menghadap tali busur:
+
+\u2022 Panjang tali busur AB = 2r sin(\u03b1/2)
+
+Penjelasan: Misalkan AB tali busur dengan pusat O. Tarik OM tegak lurus AB di titik tengah tali busur (M). Karena OA = OB = r, segitiga OAB sama kaki sehingga OM membagi sudut \u2220AOB sama besar. Pada segitiga siku-siku OMA, \u2220AOM = \u03b1/2 dan AM = r sin(\u03b1/2), sehingga AB = 2 \u00b7 AM = 2r sin(\u03b1/2).
+
+(2) Jika diketahui jari-jari r dan jarak tali busur ke pusat (apotema) a:
+
+\u2022 Panjang tali busur AB = 2\u221a(r\u00b2 \u2212 a\u00b2)
+
+Penjelasan: Jarak pusat ke tali busur disebut apotema (a = OM). Pada segitiga siku-siku OMA berlaku Pythagoras: r\u00b2 = a\u00b2 + AM\u00b2, sehingga AM = \u221a(r\u00b2 \u2212 a\u00b2) dan AB = 2 \u00b7 AM = 2\u221a(r\u00b2 \u2212 a\u00b2).
+
+Sifat penting:
+\u2022 Apotema selalu tegak lurus dan membagi tali busur menjadi dua bagian sama panjang.
+\u2022 Semakin besar sudut pusat (mendekati 180\u00b0), semakin panjang tali busur (mendekati 2r = diameter).
+\u2022 Tali busur yang sama panjang berjarak sama dari pusat lingkaran (apotema sama).`
+      },
     ],
     rumus: [
       { label: 'Sudut Pusat (\u03b1) terhadap Sudut Keliling (\u03b8)', formula: '\\alpha = 2\\theta', latex: true },
       { label: 'Sudut Keliling (\u03b8) terhadap Sudut Pusat (\u03b1)', formula: '\\theta = \\dfrac{1}{2}\\alpha', latex: true },
       { label: 'Panjang Busur', formula: 'l = \\dfrac{\\alpha}{360^\\circ} \\times 2\\pi r', latex: true },
       { label: 'Luas Juring', formula: 'L = \\dfrac{\\alpha}{360^\\circ} \\times \\pi r^2', latex: true },
+      { label: 'Panjang Tali Busur (dari sudut pusat)', formula: 'AB = 2r \\sin\\left(\\dfrac{\\alpha}{2}\\right)', latex: true },
+      { label: 'Panjang Tali Busur (dari apotema)', formula: 'AB = 2\\sqrt{r^2 - a^2}', latex: true },
     ],
     contoh: [
       {
@@ -794,6 +841,16 @@ di mana \u03b1 adalah besar sudut pusat (dalam derajat) dan r adalah jari-jari l
           '(c) Panjang busur l = (120/360) × 2 × (22/7) × 14 = (1/3) × 88 = 29,33 m. Luas juring L = (120/360) × (22/7) × 14² = (1/3) × 616 = 205,33 m².',
           '(d) Sprinkler berputar dari satu titik (pusat) hanya pada sudut 120°, bukan 360° penuh. Areanya dibatasi dua jari-jari dan satu busur — itulah definisi juring.',
           '(e) Tidak cukup, karena 205,33 m² < 600 m². Solusi: perpanjang jari-jari (jangkauan), karena luas juring sebanding dengan r² — lebih efektif daripada memperbesar sudut yang hanya berbanding lurus.'
+        ],
+      },
+      {
+        soal: 'Sebuah taman berbentuk lingkaran dengan jari-jari 25 meter. Pada taman tersebut akan dibangun jembatan kayu lurus yang menghubungkan dua titik di tepi taman. Jembatan direncanakan berjarak 7 meter dari titik pusat taman.\n\na. Apa peran jembatan terhadap lingkaran taman?\n\nb. Tuliskan data yang diketahui.\n\nc. Hitunglah panjang jembatan tersebut!\n\nd. Mengapa apotema dari pusat lingkaran selalu tegak lurus terhadap tali busur?\n\ne. Jika jembatan ingin diperpanjang sampai 48 meter, berapa jarak baru jembatan dari pusat taman?',
+        solusi: [
+          '(a) Jembatan adalah tali busur lingkaran taman, karena merupakan ruas garis lurus yang menghubungkan dua titik pada lingkaran.',
+          '(b) Data: jari-jari r = 25 m, apotema a = 7 m (jarak jembatan ke pusat taman).',
+          '(c) Panjang tali busur AB = 2\u221a(r\u00b2 \u2212 a\u00b2) = 2\u221a(25\u00b2 \u2212 7\u00b2) = 2\u221a(625 \u2212 49) = 2\u221a576 = 2 \u00d7 24 = 48 meter.',
+          '(d) Karena segitiga yang dibentuk oleh dua jari-jari ke ujung tali busur (OA dan OB) selalu sama kaki (OA = OB = r). Ruas dari pusat ke titik tengah tali busur (apotema) menjadi garis tinggi sekaligus garis bagi yang tegak lurus terhadap alas tali busur.',
+          '(e) Kalau jembatan ingin tepat 48 m maka apotema = \u221a(r\u00b2 \u2212 (AB/2)\u00b2) = \u221a(625 \u2212 576) = \u221a49 = 7 m \u2014 ternyata jaraknya tidak berubah karena hasilnya sudah 48 m. Artinya, perencanaan saat ini sudah pas. (Untuk jembatan yang lebih panjang dari 48 m, jaraknya ke pusat harus lebih kecil dari 7 m; semakin panjang tali busur, semakin dekat ke pusat.)'
         ],
       },
     ],
