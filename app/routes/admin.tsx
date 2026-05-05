@@ -44,11 +44,18 @@ interface HasilSiswa {
   totalSkor: number;
   skorDiperoleh: number;
   timeTaken: number;
+  /** True kalau row Supabase ada DAN siswa sudah klik "Selesai" (isInProgress=false). */
   done: boolean;
+  /** True kalau row Supabase ada TAPI siswa masih mengerjakan (isInProgress=true). */
+  inProgress: boolean;
+  /** Banyak soal yang sudah di-submit (untuk label "Sedang dikerjakan X/15"). */
+  progressCount: number;
   answers?: Record<number, number>;
   essayImages?: Record<number, string>;
   submitted?: Record<number, boolean>;
   submittedAt?: number;
+  /** Timestamp aktivitas terakhir (untuk progres in-progress). */
+  updatedAt?: number;
 }
 
 export default function AdminPage() {
@@ -164,6 +171,8 @@ export default function AdminPage() {
     (siswaId: string, topicId: string): HasilSiswa => {
       const cloud = hasilMap[`${siswaId}-${topicId}`];
       if (cloud) {
+        const inProgress = !!cloud.isInProgress;
+        const progressCount = Object.values(cloud.submitted ?? {}).filter(Boolean).length;
         return {
           score: cloud.score,
           total: cloud.total,
@@ -174,7 +183,10 @@ export default function AdminPage() {
           essayImages: cloud.essayImageUrls,
           submitted: cloud.submitted,
           submittedAt: cloud.submittedAt,
-          done: true,
+          updatedAt: cloud.updatedAt,
+          done: !inProgress,
+          inProgress,
+          progressCount,
         };
       }
       // Fallback: sessionStorage (kalau guru kebetulan login di device yang sama)
@@ -192,10 +204,15 @@ export default function AdminPage() {
             essayImages: data.essayImages,
             submitted: data.submitted,
             done: true,
+            inProgress: false,
+            progressCount: 0,
           };
         }
       } catch { /* ignore */ }
-      return { score: 0, total: 15, totalSkor: 0, skorDiperoleh: 0, timeTaken: 0, done: false };
+      return {
+        score: 0, total: 15, totalSkor: 0, skorDiperoleh: 0, timeTaken: 0,
+        done: false, inProgress: false, progressCount: 0,
+      };
     },
     [hasilMap]
   );
@@ -346,6 +363,16 @@ export default function AdminPage() {
                       </td>
                       <td className={styles.tdCenter}>{siswa.kelas}</td>
                       {hasilList.map((h, idx) => {
+                        if (h.inProgress) {
+                          return (
+                            <td key={idx} className={styles.tdCenter}>
+                              <span className={styles.inProgressBadge} title="Siswa sedang mengerjakan latihan ini">
+                                <Clock size={11} />
+                                {h.progressCount}/{h.total}
+                              </span>
+                            </td>
+                          );
+                        }
                         if (!h.done) {
                           return (
                             <td key={idx} className={styles.tdCenter}>
@@ -443,7 +470,12 @@ export default function AdminPage() {
                                 {materi.title}
                               </div>
                               <div className={styles.jawabanTopicMeta}>
-                                {hasil.done ? (
+                                {hasil.inProgress ? (
+                                  <span className={styles.inProgressChip}>
+                                    <Clock size={12} />
+                                    Sedang dikerjakan · {hasil.progressCount}/{hasil.total} soal
+                                  </span>
+                                ) : hasil.done ? (
                                   <span className={styles.scoreChip}>
                                     {hasil.skorDiperoleh}/{hasil.totalSkor} poin · {formatTime(hasil.timeTaken)}
                                   </span>
@@ -454,7 +486,7 @@ export default function AdminPage() {
                               </div>
                             </button>
 
-                            {isTopicOpen && hasil.done && (
+                            {isTopicOpen && (hasil.done || hasil.inProgress) && (
                               <div className={styles.soalJawabanList}>
                                 {soalList.map((soal, idx) => {
                                   const jawaban = hasil.answers?.[idx];

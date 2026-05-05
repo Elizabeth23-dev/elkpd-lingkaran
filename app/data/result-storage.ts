@@ -36,6 +36,12 @@ export interface CloudHasil {
   /** URL ImgBB (bukan base64) — supaya tidak penuhin kuota DB. */
   essayImageUrls: Record<number, string>;
   submittedAt: number;
+  /** True kalau siswa masih mengerjakan; false kalau sudah klik "Selesai". */
+  isInProgress?: boolean;
+  /** Indeks soal yang sedang aktif (untuk resume). */
+  currentIndex?: number;
+  /** Timestamp aktivitas terakhir (auto-save progres atau submit final). */
+  updatedAt?: number;
 }
 
 interface CacheEntry {
@@ -60,6 +66,9 @@ interface SupabaseHasilRow {
   submitted: Record<string, boolean> | null;
   essay_image_urls: Record<string, string> | null;
   submitted_at: string;
+  is_in_progress?: boolean | null;
+  current_index?: number | null;
+  updated_at?: string | null;
 }
 
 /** Konversi dari Record<number, T> (dipakai di TS) ke object yang aman ditulis ke jsonb. */
@@ -88,6 +97,9 @@ function rowToHasil(row: SupabaseHasilRow): CloudHasil {
     submitted: numericKeyedRecord<boolean>(row.submitted),
     essayImageUrls: numericKeyedRecord<string>(row.essay_image_urls),
     submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : Date.now(),
+    isInProgress: row.is_in_progress ?? false,
+    currentIndex: row.current_index ?? 0,
+    updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : undefined,
   };
 }
 
@@ -106,6 +118,9 @@ function hasilToRow(entry: CloudHasil): SupabaseHasilRow {
     submitted: entry.submitted ?? {},
     essay_image_urls: entry.essayImageUrls ?? {},
     submitted_at: new Date(entry.submittedAt || Date.now()).toISOString(),
+    is_in_progress: entry.isInProgress ?? false,
+    current_index: entry.currentIndex ?? 0,
+    updated_at: new Date(entry.updatedAt ?? Date.now()).toISOString(),
   };
 }
 
@@ -118,10 +133,12 @@ function readLocalHasil(): CloudHasil[] {
   }
 }
 
-function writeLocalHasil(hasil: CloudHasil[]): void {
+function writeLocalHasil(hasil: CloudHasil[], dispatchEvent = true): void {
   try {
     localStorage.setItem(HASIL_LOCAL_FALLBACK, JSON.stringify(hasil));
-    window.dispatchEvent(new StorageEvent('storage', { key: HASIL_LOCAL_FALLBACK }));
+    if (dispatchEvent) {
+      window.dispatchEvent(new StorageEvent('storage', { key: HASIL_LOCAL_FALLBACK }));
+    }
   } catch { /* ignore */ }
 }
 
@@ -163,7 +180,7 @@ async function fetchAllFromSupabase(): Promise<CloudHasil[]> {
   const { data, error } = await supabase
     .from('cloud_hasil')
     .select(
-      'id, siswa_id, siswa_name, topic_id, score, total, total_skor, skor_diperoleh, time_taken, answers, submitted, essay_image_urls, submitted_at'
+      'id, siswa_id, siswa_name, topic_id, score, total, total_skor, skor_diperoleh, time_taken, answers, submitted, essay_image_urls, submitted_at, is_in_progress, current_index, updated_at'
     );
   if (error) throw error;
   return (data ?? []).map((row) => rowToHasil(row as SupabaseHasilRow));
@@ -199,7 +216,7 @@ export async function fetchHasil(siswaId: string, topicId: string): Promise<Clou
 export async function pushHasil(entry: CloudHasil): Promise<void> {
   // Backup localStorage dulu (idempoten)
   const localList = readLocalHasil();
-  const localUpdated = upsert(localList, entry);
+  const localUpdated = upsert(localList, { ...entry, isInProgress: entry.isInProgress ?? false });
   writeLocalHasil(localUpdated);
   setCache(localUpdated);
 
@@ -230,6 +247,49 @@ export async function pushHasil(entry: CloudHasil): Promise<void> {
     }
   }
   throw lastErr ?? new Error('Push hasil gagal setelah retry maksimum');
+}
+
+/**
+ * Push progres in-progress (siswa sedang mengerjakan, belum klik Selesai).
+ *
+ * Berbeda dengan `pushHasil`:
+ * - Selalu di-set `isInProgress=true`.
+ * - Tidak menyertakan base64 gambar essay (kolom `essay_image_urls` di-zero-kan).
+ *   Foto tetap ada di localStorage device siswa; tujuan progres cloud cuma untuk
+ *   resume cross-device & visibility ke guru.
+ * - Fail-silent: best-effort 1 attempt, tidak melempar error supaya tidak
+ *   ganggu UX latihan kalau jaringan terputus.
+ * - Tidak men-dispatch `storage` event (mencegah admin tab spam refresh).
+ */
+export async function pushProgress(
+  entry: Omit<CloudHasil, 'essayImageUrls' | 'isInProgress'>
+): Promise<void> {
+  const progressEntry: CloudHasil = {
+    ...entry,
+    isInProgress: true,
+    essayImageUrls: {}, // jangan simpan base64 di cloud
+    updatedAt: Date.now(),
+  };
+
+  // Backup ke localStorage (untuk resume offline) — tanpa dispatch event.
+  try {
+    const localList = readLocalHasil();
+    const localUpdated = upsert(localList, progressEntry);
+    writeLocalHasil(localUpdated, false);
+  } catch { /* ignore */ }
+
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured()) return;
+
+  try {
+    const { error } = await supabase
+      .from('cloud_hasil')
+      .upsert(hasilToRow(progressEntry), { onConflict: 'id' });
+    if (error) throw error;
+  } catch (err) {
+    // Sengaja silent — auto-save jangan mengganggu user kalau koneksi flaky.
+    console.warn('[result-storage] Auto-save progres gagal (akan retry pada perubahan berikutnya):', err);
+  }
 }
 
 /** Hapus 1 hasil dari cloud (dipakai admin untuk reset nilai siswa). */
