@@ -3,7 +3,12 @@ import { useNavigate } from "react-router";
 import { buildSoalList } from "~/data/materi";
 import { useAuth } from "~/hooks/use-auth";
 import { uploadImageToImgBB, isImgBBConfigured } from "~/data/image-upload";
-import { pushHasil, reconcileLocalHasil } from "~/data/result-storage";
+import {
+  pushHasil,
+  pushProgress,
+  fetchHasil,
+  reconcileLocalHasil,
+} from "~/data/result-storage";
 
 export function hasilKey(siswaId: string, topicId: string) {
   return `hasil-${siswaId}-${topicId}`;
@@ -124,7 +129,30 @@ export function useLatihan(topicId: string) {
       if (initializedTopicRef.current === topicId) return;
       initializedTopicRef.current = topicId;
 
-      const saved = loadProgress(user.id, topicId);
+      let saved = loadProgress(user.id, topicId);
+
+      // Resume cross-device: kalau localStorage device ini kosong tapi cloud
+      // punya progres in-progress, ambil dari cloud sebagai sumber kebenaran.
+      // Foto essay hanya tersimpan lokal; siswa yang pindah device akan perlu
+      // upload ulang foto (kalau belum di-submit final).
+      if (!saved && user.role === 'siswa') {
+        try {
+          const cloud = await fetchHasil(user.id, topicId);
+          if (cloud && cloud.isInProgress) {
+            saved = {
+              currentIndex: cloud.currentIndex ?? 0,
+              answers: cloud.answers ?? {},
+              submitted: cloud.submitted ?? {},
+              essayImages: {},
+              startTime: cloud.updatedAt ?? Date.now(),
+            };
+            // Tulis ke localStorage supaya auto-save lokal selanjutnya konsisten.
+            saveProgress(user.id, topicId, saved);
+          }
+        } catch { /* ignore */ }
+        if (cancelled) return;
+      }
+
       if (saved) {
         // Restore dari progress tersimpan
         setCurrentIndex(saved.currentIndex);
@@ -155,7 +183,7 @@ export function useLatihan(topicId: string) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
-  // Simpan progress ke sessionStorage setiap kali state penting berubah
+  // Simpan progress ke localStorage setiap kali state penting berubah
   useEffect(() => {
     if (!user || isFinished) return;
     saveProgress(user.id, topicId, {
@@ -167,6 +195,62 @@ export function useLatihan(topicId: string) {
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, answers, submitted, essayImages, isFinished]);
+
+  // Auto-save progres ke cloud (Supabase) — debounced 3 detik supaya:
+  // - Siswa yang pindah device / clear localStorage tetap bisa lanjut.
+  // - Guru di /admin bisa lihat siapa yang sedang mengerjakan & sampai mana.
+  // - Tidak mem-spam Supabase: kalau ada perubahan beruntun (mis. pilih
+  //   jawaban lalu submit dalam 1 detik), hanya 1 push setelah 3 detik idle.
+  // Foto essay TIDAK ikut di-push (tetap di localStorage device); upload ke
+  // ImgBB & simpan URL terjadi saat klik "Selesai & Lihat Hasil".
+  useEffect(() => {
+    if (!user || user.role !== 'siswa' || isFinished) return;
+    // Hanya push kalau siswa benar-benar sudah berinteraksi (ada jawaban /
+    // pindah dari soal pertama). Cegah row in-progress kosong dibuat begitu
+    // siswa membuka halaman tapi langsung close tab tanpa jawab apa-apa.
+    const hasInteraction =
+      currentIndex > 0 ||
+      Object.keys(answers).length > 0 ||
+      Object.keys(submitted).length > 0 ||
+      Object.keys(essayImages).length > 0;
+    if (!hasInteraction) return;
+
+    const timeoutId = setTimeout(() => {
+      // Hitung skor parsial supaya guru bisa lihat progres skor.
+      const { score, totalSkor, skorDiperoleh } = soalList.reduce(
+        (acc, soal, idx) => {
+          acc.totalSkor += soal.skor;
+          if (soal.tipe === 'berpikir-kritis') {
+            if (essayImages[idx]) acc.skorDiperoleh += soal.skor;
+          } else if (answers[idx] === soal.jawabanBenar) {
+            acc.skorDiperoleh += soal.skor;
+            acc.score += 1;
+          }
+          return acc;
+        },
+        { score: 0, totalSkor: 0, skorDiperoleh: 0 }
+      );
+      const timeTaken = Math.round((Date.now() - startTimeRef.current) / 1000);
+      void pushProgress({
+        id: `${user.id}-${topicId}`,
+        siswaId: user.id,
+        siswaName: user.name,
+        topicId,
+        score,
+        total: soalList.length,
+        totalSkor,
+        skorDiperoleh,
+        timeTaken,
+        answers,
+        submitted,
+        currentIndex,
+        submittedAt: 0, // marker: belum benar-benar submit final
+      });
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, answers, submitted, essayImages, isFinished, topicId, user]);
 
   // Countdown per soal — ketika habis, otomatis pindah ke soal berikutnya atau selesai
   useEffect(() => {
@@ -304,6 +388,10 @@ export function useLatihan(topicId: string) {
           submitted,
           essayImageUrls,
           submittedAt: Date.now(),
+          // Final submit: overwrite row in-progress (kalau ada) jadi selesai.
+          isInProgress: false,
+          currentIndex: soalList.length - 1,
+          updatedAt: Date.now(),
         });
       } catch (err) {
         console.warn('[use-latihan] Cloud push gagal (data tetap tersimpan lokal):', err);
